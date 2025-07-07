@@ -342,3 +342,78 @@ note:
   - If problem allows start == end, use '>='
   - If problem requires strict non-overlap (start > end), use '>'
 
+5)problem: Merge Overlapping Intervals
+
+description: |
+  Given a list of intervals where each interval is a pair [start, end],
+  merge all overlapping intervals and return a list of non-overlapping intervals
+  that cover all the input intervals.
+
+approach: Greedy Merge
+
+sorting_step:
+  reason: |
+    To easily detect overlapping intervals, we must process them in order of their start times.
+    Sorting by start time ensures all overlapping intervals are adjacent in the list.
+  code_snippet: |
+    sort(intervals.begin(), intervals.end());
+
+variables:
+  - n: number of intervals
+  - ans: list to store the merged, non-overlapping intervals
+
+main_loop:
+  iteration: for each interval in intervals
+  logic:
+    - if ans is empty:
+        - this is the first interval, add it to ans
+    - else if current interval does NOT overlap with last interval in ans:
+        - check: interval[0] > ans.back()[1]
+        - reasoning: if current start > last end, no overlap exists
+        - action: push current interval into ans
+    - else if current interval overlaps with last interval in ans:
+        - merge by updating end time
+        - new_end = max(current_end, ans.back()[1])
+
+  code_snippet: |
+    for (auto interval : intervals) {
+        if (ans.empty())
+            ans.push_back(interval);
+        else if (interval[0] > ans.back()[1])
+            ans.push_back(interval);
+        else
+            ans.back()[1] = max(ans.back()[1], interval[1]);
+    }
+
+final_return:
+  - return the list of merged intervals
+  code_snippet: |
+    return ans;
+
+example_dry_run:
+  input: [[1,3], [2,6], [8,10], [15,18]]
+  sorted: [[1,3], [2,6], [8,10], [15,18]]
+  steps:
+    - [1,3] → ans = [[1,3]]
+    - [2,6] overlaps → merge → ans = [[1,6]]
+    - [8,10] no overlap → ans = [[1,6], [8,10]]
+    - [15,18] no overlap → ans = [[1,6], [8,10], [15,18]]
+  output: [[1,6], [8,10], [15,18]]
+
+time_complexity:
+  sorting: O(n log n)
+  merge_loop: O(n)
+  total: O(n log n)
+
+space_complexity:
+  worst_case: O(n) for answer list if no intervals overlap
+
+why_this_works:
+  - Sorting ensures overlapping intervals are adjacent
+  - Greedy merge ensures only necessary intervals are merged
+  - We maintain the latest end time seen so far to check overlaps
+
+notes:
+  - Works only if intervals are sorted by start time
+  - Using `ans.back()` allows constant-time access to last merged interval
+
