@@ -1,0 +1,199 @@
+1)C++_Basics:
+  Syntax:
+    Function_Declaration: "return_type function_name(parameters) { /* code */ }"
+    If_Else: |
+      if (condition) {
+        // code
+      } else {
+        // code
+      }
+    Loops:
+      For: "for (int i = 0; i < n; i++)"
+      While: "while (condition) { }"
+      Do_While: "do { } while (condition);"
+
+  Pointers_And_References:
+    Pointer:
+      Declaration: "int* p = &x;"
+      Meaning: "'p' stores address of 'x'"
+      Dereference: "*p gives value at the address"
+    Reference:
+      Declaration: "int& ref = x;"
+      Meaning: "'ref' is another name for 'x', changes reflect both ways"
+
+  Comparators:
+    Custom_Sort_Vector:
+      Code: |
+        bool cmp(pair<int,int> a, pair<int,int> b) {
+          return a.first > b.first; // descending
+        }
+        sort(vec.begin(), vec.end(), cmp);
+      Use: "Custom sorting logic in STL algorithms"
+
+  Vector:
+    Declaration: "vector<int> v;"
+    Common_Operations:
+      Push_Back: "v.push_back(x);"
+      Access: "v[i], v.at(i)"
+      Size: "v.size()"
+      Back: "v.back()"
+      Front: "v.front()"
+      Pop_Back: "v.pop_back();"
+      Clear: "v.clear();"
+
+  Stack:
+    Header: "#include<stack>"
+    Operations:
+      Declaration: "stack<int> s;"
+      Push: "s.push(x);"
+      Pop: "s.pop();"
+      Top: "s.top();"
+      Size: "s.size();"
+      Empty: "s.empty();"
+
+  Queue:
+    Header: "#include<queue>"
+    Operations:
+      Declaration: "queue<int> q;"
+      Push: "q.push(x);"
+      Pop: "q.pop();"
+      Front: "q.front();"
+      Back: "q.back();"
+      Size: "q.size();"
+      Empty: "q.empty();"
+
+  Priority_Queue:
+    Max_Heap: "priority_queue<int> pq;"
+    Min_Heap: |
+      priority_queue<int, vector<int>, greater<int>> pq;
+    Custom_Comparator: |
+      struct cmp {
+        bool operator()(pair<int,int>& a, pair<int,int>& b) {
+          return a.second > b.second;
+        }
+      };
+      priority_queue<pair<int,int>, vector<pair<int,int>>, cmp> pq;
+
+  Nested_Loops:
+    Basic_Syntax: |
+      for(int i = 0; i < n; i++) {
+        for(int j = 0; j < m; j++) {
+          // code using i, j
+        }
+      }
+    Use_Cases:
+      Matrix_Traversal: "For 2D matrix/grid problems"
+      Subarray_Sum: |
+        for(int i = 0; i < n; i++) {
+          int sum = 0;
+          for(int j = i; j < n; j++) {
+            sum += arr[j];
+            // process sum(i..j)
+          }
+        }
+      Adjacency_Checking: |
+        for(int u = 0; u < n; u++) {
+          for(auto v : adj[u]) {
+            // process edge u -> v
+          }
+        }
+      Prefix_Sum_2D: |
+        for(int i = 0; i < n; i++)
+          for(int j = 0; j < m; j++)
+            sum[i][j] = A[i][j] + sum[i-1][j] + sum[i][j-1] - sum[i-1][j-1];
+
+  Complex_Declarations:
+    Adjacency_List:
+      Undirected_Graph: "vector<vector<int>> adj(n);"
+      Weighted_Graph: "vector<vector<pair<int,int>>> adj(n); // {v, wt}"
+      3D_Adjacency: "vector<vector<vector<pair<int,int>>>> graph;"
+    Vector_of_Pairs: "vector<pair<int,int>> vp;"
+    Vector_of_Vector_of_Pairs: "vector<vector<pair<int,int>>> vvp;"
+    Set_of_Pairs: "set<pair<int,int>> s;"
+    Map:
+      Frequency_Map: "map<int,int> freq;"
+      Char_Map: "unordered_map<char,int> m;"
+
+  Notes:
+    STL_Usage:
+      - "Always use pass-by-reference in loops: for(auto &x : vec)"
+      - "Vectors are dynamic, arrays are static"
+    Tips:
+      - "Prefer vector over array for flexibility"
+      - "Use nested loops for pairwise comparisons, prefix/suffix logic, grid traversal"
+
+2)Check_Valid_Parentheses:
+  Purpose: "Check if a given string of parentheses is valid (balanced and properly nested)."
+
+  Functions:
+    match:
+      Signature: "bool match(char ch1, char ch2)"
+      Purpose: "Checks if the two characters form a valid opening-closing bracket pair."
+      Logic:
+        - "'(' matches with ')'"
+        - "'{' matches with '}'"
+        - "'[' matches with ']'"
+      Return: "true if the pair is valid, else false"
+
+    checkValidString:
+      Signature: "bool checkValidString(string s)"
+      Purpose: "Check if the input string `s` has valid and balanced brackets using a stack."
+
+      Steps:
+        1. Initialize a stack:
+          Code: "stack<char> st;"
+          Reason: "To keep track of unmatched opening brackets"
+        
+        2. Loop through each character in the string:
+          Loop: "for (int i = 0; i < n; i++)"
+
+          Cases:
+            - If current character is a closing bracket: ')', '}', or ']':
+                Conditions:
+                  - If stack is empty:
+                      Meaning: "No opening bracket to match with this closing bracket"
+                      Action: "return false"
+                  - Else, check if top of stack matches:
+                      Logic: "match(st.top(), s[i])"
+                      If true: "Pop from stack (valid pair found)"
+                      Else: "return false (mismatched brackets)"
+            
+            - Else: (opening bracket):
+                Action: "Push it onto the stack"
+                Reason: "To wait for its corresponding closing bracket later"
+
+        3. Final Stack Check:
+          Code: "return st.empty();"
+          Meaning: 
+            -After the for loop is processed fully there is chance opening brackets may be left,for sure Only opening brackets are possible to be leftbehind not closing brackets because all closing brackets we are processig inside the for loop only.So if any opening brackets are left then also retur false,else return true
+            - "If stack is empty: All brackets matched properly → return true"
+            - "If stack is not empty: Some opening brackets were not closed → return false"
+
+  Example_Run:
+    Input: "({[]})"
+    Stack_Trace:
+      - Push '('
+      - Push '{'
+      - Push '['
+      - Match '[' and ']' → pop
+      - Match '{' and '}' → pop
+      - Match '(' and ')' → pop
+    Final_Stack: "empty → return true"
+
+  Edge_Cases:
+    - Input: "([)]"
+      Explanation: "Although brackets are balanced in number, nesting is invalid → return false"
+    - Input: "(()"
+      Explanation: "Missing closing bracket for one opening → return false"
+    - Input: "" (empty string)
+      Explanation: "Technically balanced → return true"
+
+  Notes:
+    - Time_Complexity: "O(n)"
+    - Space_Complexity: "O(n) in worst case (all openings)"
+    - Only works for '(', ')', '{', '}', '[', ']' — doesn't support wildcards like '*'
+
+  Optional_Extensions:
+    - Support wildcard '*' as either '(' or ')' or empty (like in Leetcode problem)
+    - Count total matched pairs
+    - Return position of error for debugging
