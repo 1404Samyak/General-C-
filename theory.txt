@@ -197,3 +197,87 @@
     - Support wildcard '*' as either '(' or ')' or empty (like in Leetcode problem)
     - Count total matched pairs
     - Return position of error for debugging
+
+3)Valid_Parenthesis_With_Star:
+  Problem:
+    Statement: |
+      Check whether a given string with characters '(', ')', and '*' is valid.
+      '*' can represent either '(', ')' or an empty string.
+    Goal: |
+      Return true if the string can be interpreted as a valid sequence of parentheses.
+
+  Core_Logic:
+    Stacks_Used:
+      open:
+        Description: "Stores indices of unmatched '(' characters"
+      star:
+        Description: "Stores indices of '*' characters (can act as '(', ')' or empty)"
+    
+    Main_Loop:
+      Iterate_Over_String:
+        Code: |
+          for (int i = 0; i < n; i++) {
+              if (s[i] == '(') open.push(i);
+              else if (s[i] == '*') star.push(i);
+              else {
+                  if (!open.empty()) open.pop();
+                  else if (!star.empty()) star.pop();
+                  else return false;
+              }
+          }
+        Purpose:
+          - Push index of '(' to open stack
+          - Push index of '*' to star stack
+          - When ')' is encountered:
+              - First try to match with a previous '('
+              - Else use '*' as '('
+              - Else return false (no matching opening)
+    
+    Post_Loop_Compensation:
+      Why_Needed: |
+        After the loop, unmatched '(' may still remain in the open stack.
+        These need to be matched using '*' treated as ')'.
+        But only if '*' appeared **after** the '(' in the string.
+      Code: |
+        while (!open.empty() && !star.empty()) {
+            if (open.top() > star.top()) return false;
+            open.pop();
+            star.pop();
+        }
+      Reasoning:
+        - '(' at a later index than '*' means '*' appeared too early to act as ')'
+        - So such combinations are invalid
+
+    Final_Return:
+      Code: |
+        return open.empty();
+      Meaning:
+        - If all '(' were matched (directly or via '*'), return true
+        - If any unmatched '(', return false
+
+  Dry_Run_Example:
+    Input: "(*))"
+    Stack_States:
+      Step_1: '(' at 0 → open = [0]
+      Step_2: '*' at 1 → star = [1]
+      Step_3: ')' at 2 → match with '(' → open.pop()
+      Step_4: ')' at 3 → no '(', match with '*' → star.pop()
+    Final: both stacks empty → ✅ valid
+
+    Input: "*)("
+    Stack_States:
+      Step_1: '*' at 0 → star = [0]
+      Step_2: ')' at 1 → no '(', match with '*' → star.pop()
+      Step_3: '(' at 2 → open = [2]
+    Final: open = [2], star = [] → ❌ invalid
+
+  Time_Complexity: "O(n)"
+  Space_Complexity: "O(n)"
+  Constraints:
+    - Only supports '(', ')', and '*'
+    - Does not support '{' or '[' types of brackets
+
+  Notes:
+    - Clever use of indices allows enforcing correct ordering
+    - The problem is based on Leetcode 678: Valid Parenthesis String
+    - This greedy two-stack method is more efficient than backtracking all '*' cases
