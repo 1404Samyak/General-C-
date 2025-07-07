@@ -281,3 +281,64 @@
     - Clever use of indices allows enforcing correct ordering
     - The problem is based on Leetcode 678: Valid Parenthesis String
     - This greedy two-stack method is more efficient than backtracking all '*' cases
+
+4)problem: Maximum Number of Non-Overlapping Meetings
+
+constraints:
+  - You are given two arrays: start[i], end[i] of size n
+  - You must select the maximum number of meetings such that:
+    - No two selected meetings overlap
+    - The start time of a meeting must be strictly greater than the end time of the last selected meeting
+
+solution_type: Greedy Algorithm
+
+key_observation:
+  - To schedule the maximum number of non-overlapping meetings, you should always choose the meeting that ends the earliest
+  - This leaves the most room for future meetings
+
+why_sort_by_end_time:
+  - If you sort by end time, you always consider the meeting that finishes earliest first
+  - This minimizes the time blocked by the current meeting
+  - It ensures you leave space for as many future meetings as possible
+  - This is optimal because picking a later-ending meeting might block a lot of shorter earlier-starting meetings
+
+comparator_used:
+  syntax: |
+    sort(v.begin(), v.end(), [](pair<int, int>& p1, pair<int, int>& p2) {
+        return p1.second <= p2.second;
+    });
+
+  explanation:
+    - For two pairs p1 and p2 representing (start, end) of meetings:
+      - If p1.second < p2.second → p1 comes before p2 ✅
+      - If p1.second == p2.second → p1 comes before p2 (allowed because <= is true)
+      - No explicit tie-breaking is used, but it doesn't matter for greedy correctness
+    - This sort places meetings with the earliest end times at the front
+    - Even if some meetings have the same end time, any one of them is safe to consider first
+
+greedy_selection:
+  - Initialize endtime = -infinity (or 0)
+  - Traverse the sorted meetings
+  - For each meeting:
+      if start > endtime:
+        - select the meeting
+        - update endtime = current meeting's end
+  - This ensures strictly non-overlapping selection
+
+correctness_reasoning:
+  - Greedy always picks the next meeting that ends the soonest
+  - Once picked, no earlier-ending meeting could have been selected (because you already processed them)
+  - By always choosing the best local (earliest ending) option, the global (maximum count) is achieved
+  - This has been proven correct for the interval scheduling maximization problem
+
+time_complexity:
+  sorting: O(n log n)
+  greedy_selection: O(n)
+  total: O(n log n)
+
+space_complexity: O(n) due to pair storage, O(1) if in-place sorting used
+
+note:
+  - If problem allows start == end, use '>='
+  - If problem requires strict non-overlap (start > end), use '>'
+
