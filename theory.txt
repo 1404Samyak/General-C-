@@ -417,3 +417,56 @@ notes:
   - Works only if intervals are sorted by start time
   - Using `ans.back()` allows constant-time access to last merged interval
 
+6)maxSumCombinations:
+  purpose: >
+    To find the k largest sum combinations from two arrays nums1 and nums2,
+    where each sum is formed by adding one element from nums1 and one from nums2.
+
+  key_idea:
+    - Sort both arrays in descending order to prioritize larger elements first.
+    - Use a max-heap (priority_queue) to always extract the next largest combination.
+    - Avoid duplicates by using a set to track visited index pairs (i, j).
+    - Push neighboring combinations of the current pair to explore all possible top combinations.
+
+  why_insert_both_neighbors:
+    reason_1: "We are interested in the top-k largest sums — not just the next immediate maximum."
+    reason_2: >
+      Even if (i+1, j) has a greater sum than (i, j+1) now,
+      the path from (i, j+1) might lead to even larger combinations later.
+      Ignoring it could miss some of the actual top-k combinations.
+    reason_3: >
+      Both directions (i+1, j) and (i, j+1) represent different combination paths.
+      Only pushing one of them can miss combinations involving nums1[i] with later nums2[j+1],
+      or nums2[j] with later nums1[i+1].
+    reason_4: >
+      The max-heap takes care of ordering and selecting the next largest sum,
+      so it's safe and optimal to explore both neighbors and let the heap manage which one to pick next.
+
+  role_of_set:
+    purpose: "To prevent visiting the same (i, j) index pair multiple times."
+    ensures:
+      - No duplicate sums are pushed into the heap.
+      - Memory and computation are saved.
+      - Correctness: prevents redundant computation and infinite loop.
+    inserted_when:
+      - After pushing (i+1, j) into pq, insert (i+1, j) into the set.
+      - After pushing (i, j+1) into pq, insert (i, j+1) into the set.
+
+  heap_invariant:
+    - The max-heap always stores the current best unseen combinations.
+    - It ensures that at each step, the largest possible sum is picked greedily.
+    - By pushing both neighbors, the algorithm maintains correctness and completeness.
+
+  correctness:
+    - The algorithm guarantees that the top-k combinations are extracted in non-increasing order.
+    - No combination is revisited.
+    - All necessary potential candidates are explored due to the neighbor insertions.
+
+  time_and_space_complexity:
+    time: "O(k * log k + n log n) — dominated by heap operations and initial sorting"
+    space: "O(k) for heap and visited set"
+
+  conclusion: >
+    Always push both neighbors (i+1, j) and (i, j+1) if they are within bounds and not visited.
+    This ensures that no potential top-k sum is missed, and that the heap has all possible candidates to work with.
+
