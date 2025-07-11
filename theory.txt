@@ -470,3 +470,75 @@ notes:
     Always push both neighbors (i+1, j) and (i, j+1) if they are within bounds and not visited.
     This ensures that no potential top-k sum is missed, and that the heap has all possible candidates to work with.
 
+7)Minimum Cost to Connect Sticks:
+  problem_statement: >
+    You are given an array `sticks`, where each element represents the length of a stick.
+    You want to connect all the sticks into one stick.
+    The cost of connecting two sticks is equal to the sum of their lengths.
+    Your goal is to connect the sticks such that the **total cost is minimized**.
+
+  key_observation: >
+    Always connect the two shortest sticks first to minimize the cost.
+    This is a greedy strategy similar to Huffman coding.
+
+  why_min_heap:
+    reason: >
+      To always get the two smallest sticks in O(log n) time efficiently,
+      we use a **priority queue (min-heap)**. The top element of a min-heap is the smallest.
+    min_heap_behavior:
+      - Insertion (push): O(log n)
+      - Deletion (pop): O(log n)
+      - Access minimum: O(1)
+
+  approach:
+    data_structure: min-heap (priority_queue with greater<int>)
+    steps:
+      - Step 1: Insert all stick lengths into the min-heap.
+      - Step 2: While more than one stick remains:
+          - Pop the two smallest sticks from the heap.
+          - Compute their sum (cost of connecting them).
+          - Add the cost to the answer.
+          - Push the new stick (sum) back into the heap.
+      - Step 3: Return the accumulated cost.
+
+  dry_run_example:
+    input: [2, 4, 3]
+    heap_states:
+      - Initial heap: [2, 4, 3]
+      - Pop 2 and 3 → cost = 5 → heap: [4, 5]
+      - Pop 4 and 5 → cost = 9 → heap: [9]
+    total_cost: 5 + 9 = 14
+
+  time_complexity:
+    expression: O(n log n)
+    explanation: >
+      Each insertion and removal in the heap is O(log n),
+      and you perform about n−1 such operations.
+
+  space_complexity:
+    expression: O(n)
+    explanation: >
+      The heap stores all n sticks in the worst case.
+
+  code_snippet: |
+        int connectSticks(vector<int>& sticks) {
+            // Min-heap to always pick the two smallest sticks
+            priority_queue<int, vector<int>, greater<int>> pq;
+            // Push all stick lengths into the min-heap
+            for (int stick : sticks) {
+                pq.push(stick);
+            }
+            int totalCost = 0;
+            // Keep combining the two smallest sticks until one stick remains
+            while (pq.size() >= 2) {
+                int a = pq.top(); pq.pop(); // Smallest stick
+                int b = pq.top(); pq.pop(); // Second smallest stick
+                int cost = a + b;
+                totalCost += cost;
+                pq.push(cost); // Insert the combined stick back
+            }
+            return totalCost;
+        }
+    };
+
+
