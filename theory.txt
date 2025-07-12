@@ -689,3 +689,81 @@ Final_Recommendation:
   - Use median-based method in production for simplicity and performance.
   - Keep prefix-suffix logic as a great way to understand cumulative cost computation.
 
+10)Problem: Minimum Beans to Remove to Equalize Bags
+Description:
+  - You're given an array `beans[]` where each element represents the number of beans in a bag.
+  - In one operation, you can remove **any number of beans** from any bag.
+  - You must choose **one integer x ≥ 0**, and make all non-empty bags have exactly x beans.
+  - Your goal is to **minimize the total number of beans removed**.
+
+Intuition:
+  - After sorting, for any index `i`, you can:
+      - Remove **all beans in bags from index 0 to i-1** (i.e., make those bags empty).
+      - Make all remaining bags (from i to n-1) have exactly `beans[i]` beans.
+      - This means reducing all `beans[j]` where j ≥ i to `beans[i]`.
+
+Approach: Prefix and Suffix Sum with Sorted Array
+
+Steps:
+  1. **Sort** the array to ensure increasing order.
+  2. **Prefix Sum (pf)**:
+      - `pf[i]` = total beans from index 0 to i
+      - Helps in quickly calculating cost to remove all beans from bags `0` to `i-1`.
+  3. **Suffix Sum (sf)**:
+      - `sf[i]` = total beans from index i to n-1
+      - Helps in calculating cost to reduce bags from `i` to `n-1` to `beans[i]`
+  4. For each index `i`:
+      - Set `beans[i]` as the target value.
+      - Cost:
+        - Remove all from 0 to i-1 → `pf[i-1]`
+        - Reduce all from i to n-1 to `beans[i]` → `sf[i] - (n - i) * beans[i]`
+      - Total cost = `pf[i-1] + sf[i] - (n - i) * beans[i]`
+  5. Track the minimum total cost over all such `i`.
+
+Edge_Case:
+  - For `i = 0`, we never enter the loop, so we handle it outside:
+    - Cost = remove all beans down to `beans[0]` → `sf[0] - n * beans[0]`
+
+Time_Complexity: O(n log n)
+  - Sorting: O(n log n)
+  - Prefix/suffix + loop: O(n)
+
+Space_Complexity: O(n)
+  - For prefix and suffix arrays
+
+Code_Snippet:
+  code: |
+    class Solution {
+    public:
+        typedef long long ll;
+        long long minimumRemoval(vector<int>& beans) {
+            int n = beans.size();
+            sort(beans.begin(), beans.end());
+            vector<ll> pf(n), sf(n); // prefix and suffix sums
+            pf[0] = beans[0];
+            for (int i = 1; i < n; i++) {
+                pf[i] = pf[i - 1] + beans[i];
+            }
+            sf[n - 1] = beans[n - 1];
+            for (int i = n - 2; i >= 0; i--) {
+                sf[i] = sf[i + 1] + beans[i];
+            }
+            ll ans = LLONG_MAX;
+            for (int i = 1; i < n; i++) {
+                ll temp = pf[i - 1] + sf[i] - 1LL * (n - i) * beans[i];
+                ans = min(ans, temp);
+            }
+            // Special case for i = 0 (all bags should have beans[0])
+            ans = min(ans, sf[0] - 1LL * n * beans[0]);
+            return ans;
+        }
+    };
+
+Alternative_Optimal_Approach:
+  - Instead of prefix/suffix, just use total sum:
+    - total_sum = sum of all beans
+    - For each i:
+      - beans_kept = beans[i] * (n - i)
+      - beans_removed = total_sum - beans_kept
+  - This is faster and simpler with same time complexity.
+
