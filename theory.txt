@@ -597,4 +597,98 @@ code: |
       return sum - mini * n;
   }
 
-9)
+9)Problem: Minimum Moves to Equal Array Elements II
+Description:
+  - You are given an array `nums` of size `n`.
+  - In one move, you can increment or decrement any element by 1.
+  - Each move costs 1 unit.
+  - Goal: Find the minimum total number of moves to make all elements equal.
+
+Intuition:
+  - We aim to minimize the total cost defined as:
+      sum(|nums[i] - x|) for some chosen target `x`.
+  - This sum of absolute differences is minimized when `x` is the **median** of the array.
+
+Approach_1: Prefix + Suffix Sum Method (User's Code)
+
+Step-by-step:
+  1. Sort the array `nums`.
+  2. Compute prefix sums:
+      - pf[i] = sum of first i+1 elements
+  3. Compute suffix sums:
+      - sf[i] = sum of elements from i to n-1
+  4. For each index `i`, treat `nums[i]` as the target and compute:
+      - left_cost = (i+1) * nums[i] - pf[i]
+      - right_cost = sf[i] - (n-i) * nums[i]
+      - total_cost = left_cost + right_cost
+  5. Take the minimum over all such costs.
+
+Time_Complexity: O(n log n)
+Space_Complexity: O(n)
+
+Code_Snippet_PrefixSuffix:
+  code: |
+    class Solution {
+    public:
+        int minMoves2(vector<int>& nums) {
+            int n = nums.size();
+            sort(nums.begin(), nums.end()); 
+            vector<long long> pf(n), sf(n);
+            pf[0] = nums[0];
+            for(int i = 1; i < n; i++) {
+                pf[i] = pf[i - 1] + nums[i];
+            }
+            sf[n - 1] = nums[n - 1];
+            for(int i = n - 2; i >= 0; i--) {
+                sf[i] = sf[i + 1] + nums[i];
+            }
+            long long ans = LLONG_MAX;
+            for(int i = 0; i < n; i++) {
+                long long left = (long long)(i + 1) * nums[i] - pf[i];
+                long long right = sf[i] - (long long)(n - i) * nums[i];
+                ans = min(ans, left + right);
+            }
+            return static_cast<int>(ans);
+        }
+    };
+
+Approach_2: Median-Based Greedy Method (Optimal)
+Concept:
+  - The sum of absolute differences is minimized at the median of the array.
+  - So, just compute the total cost of converting all elements to the median.
+
+Steps:
+  1. Sort the array.
+  2. Choose the middle element as the median.
+  3. Compute sum of absolute differences from the median.
+
+Time_Complexity: O(n log n)
+Space_Complexity: O(1)
+
+Code_Snippet_Median:
+  code: |
+    class Solution {
+    public:
+        int minMoves2(vector<int>& nums) {
+            sort(nums.begin(), nums.end());
+            int median = nums[nums.size() / 2];
+            int total = 0;
+            for (int num : nums) {
+                total += abs(num - median);
+            }
+            return total;
+        }
+    };
+  
+Comparison:
+  - Prefix-Suffix Sum:
+      - Detailed, more math-heavy, flexible for learning.
+      - Useful if you want to compute cost for all targets.
+  - Median-Based:
+      - Shortest, most optimal in time and space.
+      - Uses mathematical property of absolute sum minimization.
+
+Final_Recommendation:
+  - Use median-based method in production for simplicity and performance.
+  - Keep prefix-suffix logic as a great way to understand cumulative cost computation.
+
