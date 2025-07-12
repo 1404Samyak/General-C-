@@ -861,3 +861,87 @@ Prefix_Sum_Only_Alternative:
           if (m.find(x) != m.end()) ans = m[x] + 1
   - It's optimal to combine both ends for flexibility, as in this full version.
 
+12)Problem: Minimum Cost to Make Array Equal
+Description:
+  - You're given two arrays:
+      - `nums[]`: the original values of elements
+      - `cost[]`: cost per unit change for each corresponding `nums[i]`
+  - You can change any `nums[i]` to any integer value.
+  - The cost to change `nums[i]` to `x` is: `|nums[i] - x| * cost[i]`
+  - Your task is to choose an integer `x` such that **total cost** to make **all nums[i] == x** is minimized.
+
+Goal_Expression:
+  - For a given index `i` with `nums[i] = x`, compute total cost to change all elements to `x`:
+  - **Expression to minimize**:
+    TotalCost(i) = Cost to make nums[0..i-1] = nums[i] (left)
+                 + Cost to make nums[i+1..n-1] = nums[i] (right)
+  - Let:
+    - `v[i].first` = nums[i]
+    - `v[i].second` = cost[i]
+
+Prefix_Suffix_Sums_Usage:
+  - Sort `(nums[i], cost[i])` by `nums[i]` to handle values in increasing order.
+  
+  - **Prefix Sums**:
+    - `prefCost[i] = sum of cost[0..i]`
+    - `prefWeighted[i] = sum of nums[j] * cost[j] for j = 0 to i`
+
+  - **Suffix Info (via prefix)**:
+    - Total cost: `prefCost[n-1]`
+    - Total weighted: `prefWeighted[n-1]`
+
+  - These help compute:
+    - **LeftCost** (to increase elements before `i` to `nums[i]`):
+
+      LeftCost = nums[i] * sum(cost[0..i-1]) - sum(nums[j]*cost[j] for j = 0 to i-1)
+               = v[i].first * prefCost[i-1] - prefWeighted[i-1]
+
+    - **RightCost** (to decrease elements after `i` to `nums[i]`):
+      RightCost = sum(nums[j]*cost[j] for j = i+1 to n-1) - nums[i] * sum(cost[i+1..n-1])
+                = (prefWeighted[n-1] - prefWeighted[i]) - v[i].first * (prefCost[n-1] - prefCost[i])
+
+Time_Complexity: O(n log n)
+  - Sorting: O(n log n)
+  - Prefix sums + final loop: O(n)
+
+Space_Complexity: O(n)
+  - For prefix arrays
+
+Code_Snippet:
+  code: |
+    class Solution {
+    public:
+        typedef long long ll;
+        long long minCost(vector<int>& nums, vector<int>& cost) {
+            int n = nums.size();
+            vector<pair<ll, ll>> v(n); // store both nums[i] and cost[i] as ll
+            for (int i = 0; i < n; i++) {
+                v[i] = {static_cast<ll>(nums[i]), static_cast<ll>(cost[i])};
+            }
+            sort(v.begin(), v.end()); // sort by nums[i]
+            // Build prefix sum of cost and weighted cost
+            vector<ll> prefCost(n), prefWeighted(n);
+            prefCost[0] = v[0].second;
+            prefWeighted[0] = v[0].first * v[0].second;
+            for (int i = 1; i < n; i++) {
+                prefCost[i] = prefCost[i - 1] + v[i].second;
+                prefWeighted[i] = prefWeighted[i - 1] + v[i].first * v[i].second;
+            }
+            ll total = prefCost[n - 1];
+            ll ans = LLONG_MAX;
+            for (int i = 0; i < n; i++) {
+                ll leftCost = (i > 0) ? v[i].first * prefCost[i - 1] - prefWeighted[i - 1] : 0;
+                ll rightCost = (i < n - 1) ? (prefWeighted[n - 1] - prefWeighted[i]) - v[i].first * (prefCost[n - 1] - prefCost[i]) : 0;
+                ans = min(ans, leftCost + rightCost);
+            }
+            return ans;
+        }
+    };
+
+Summary:
+  - For each potential target `nums[i]`, use prefix and suffix sums to compute:
+    - Cost to bring all previous elements up to `nums[i]`
+    - Cost to bring all following elements down to `nums[i]`
+  - Take the minimum across all possible targets.
+  - This avoids computing absolute value differences directly and instead leverages efficient prefix summation.
+
