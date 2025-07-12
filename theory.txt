@@ -541,4 +541,59 @@ notes:
         }
     };
 
+8)Problem: Minimum Moves to Make All Array Elements Equal (by incrementing n-1 elements in each move)
 
+Intuition:
+  - After performing all the operations, every element in the array becomes equal to some final value `x`.
+  - In one move, we can increase any `n-1` elements by 1. Hence, we are only allowed to increase elements — no decreasing is allowed.
+  - For any element `a[i]`, the number of steps needed to become `x` is `x - a[i]`.
+  - Therefore, the maximum of all `(x - a[i])` across the array will determine how many total moves we make.
+  - Since x must be ≥ max(a), the effective number of moves becomes `x - min(a)`, because the smallest element needs the most increments.
+
+Goal:
+  - Find the minimum number of moves to make all elements equal, using the fact that only `n-1` elements can be incremented per move.
+
+Approach:
+  Step 1: Sum Increase Per Move
+    - In each move, we increase `n - 1` elements by 1.
+    - So the total sum of the array increases by `n - 1` after each move.
+
+  Step 2: Number of Moves
+    - Suppose we make `m` moves in total.
+    - Let the smallest element in the array be `mini`.
+    - We assume after all moves, every element becomes `x`, so:
+        x = mini + m
+
+  Step 3: Final and Initial Sum Relation
+    - Let initial sum of array = `sum`
+    - After m moves, total sum becomes:  
+        sum + m * (n - 1)
+    - But this must also equal `n * x`, because now all elements are `x`.
+
+  Step 4: Form Equation and Solve
+    Equation:
+      n * x = sum + (x - mini) * (n - 1)
+
+    Solve:
+      Left side: n * x  
+      Right side: sum + (x - mini)(n - 1)
+
+    So:
+      n * x - (x - mini)(n - 1) = sum
+
+      => x [n - (n - 1)] + mini * (n - 1) = sum  
+      => x + mini * (n - 1) = sum  
+      => x = sum - mini * (n - 1)
+
+  Step 5: Final Answer
+    - We need to compute total number of moves, which is:
+        x - mini = sum - mini * n
+
+Code_Snippet_C++:
+  code: |
+    int movesRequired(vector<int>& a) {
+        int sum = accumulate(a.begin(), a.end(), 0);
+        int mini = *min_element(a.begin(), a.end());
+        int n = a.size();
+        return sum - mini * n;
+    }
