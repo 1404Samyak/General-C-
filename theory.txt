@@ -767,3 +767,97 @@ Alternative_Optimal_Approach:
       - beans_removed = total_sum - beans_kept
   - This is faster and simpler with same time complexity.
 
+11)Problem: Minimum Operations to Reduce x to Zero
+Description:
+  - You are given an array `nums` and an integer `x`.
+  - You can remove elements from either **left end** or **right end** of the array.
+  - The goal is to find the **minimum number of operations** (removals from either side) such that the **sum of removed elements = x**.
+  - If not possible, return -1.
+
+Intuition:
+  - Removing from left = prefix sum
+  - Removing from right = suffix sum
+  - We want to remove elements from both ends such that the **total removed sum = x**
+  - Equivalently, we want to **find a subarray in the middle** whose sum is equal to `total_sum - x` and **keep** it (so all other elements are removed).
+  - But this implementation follows a different strategy:  
+    **build prefix sums**, then **scan from right**, maintaining a suffix sum and checking if a corresponding prefix sum exists that complements the suffix to reach x.
+
+Approach:
+
+  Step 1: Preprocess Prefix Sum
+    - Build a prefix sum array `pf[]` where:
+        pf[i] = sum of nums[0] to nums[i]
+    - Store all prefix sums and their **last occurring index** in a map `m`:
+        m[pf[i]] = i
+
+  Step 2: Initialize
+    - Set `m[0] = -1` to handle the case where prefix sum starts from index 0.
+    - `ans` is initialized to INT_MAX for tracking the minimum operations.
+
+  Step 3: Check Direct Prefix Case
+    - If there is a prefix sum directly equal to `x`:
+        - The first `i+1` elements sum to `x`, so we may not need to take anything from the right.
+        - Update `ans = m[x] + 1`
+
+  Step 4: Iterate Backward to Build Suffix Sums
+    - Start from the end of array.
+    - For each index `j` from `n-1` to `0`:
+        - Accumulate `sum` of suffix.
+        - Compute `remaining = x - sum`
+        - If `remaining` is present in prefix map `m` and `m[remaining] < j` (no overlap):
+            - Total elements used = prefix length + suffix length = `m[remaining] + 1 + (n - j)`
+            - Update `ans = min(ans, total)`
+
+  Step 5: Final Result
+    - If `ans` was updated, return it.
+    - Otherwise, return -1.
+
+Time_Complexity: O(n)
+  - One pass for prefix sum
+  - One backward pass for suffix sum
+  - Constant-time lookups in map
+
+Space_Complexity: O(n)
+  - For prefix sum and hash map
+
+Code_Snippet:
+  code: |
+    class Solution {
+    public:
+        int minOperations(vector<int>& nums, int x) {
+            int n = nums.size();
+            vector<int> pf(n);
+            pf[0] = nums[0];
+            for (int i = 1; i < n; i++) {
+                pf[i] = pf[i - 1] + nums[i];
+            }
+            // Map to store prefix sums and their last index
+            map<int, int> m;
+            m[0] = -1; // to handle prefix sum equal to x from index 0
+            for (int i = 0; i < n; i++) {
+                m[pf[i]] = i;
+            }
+            int ans = INT_MAX;
+            // Check if only prefix side is enough
+            if (m.find(x) != m.end()) {
+                ans = min(ans, m[x] + 1);
+            }
+            int sum = 0;
+            for (int j = n - 1; j >= 0; j--) {
+                sum += nums[j];
+                int remain = x - sum;
+                if (m.find(remain) != m.end() && m[remain] < j) {
+                    ans = min(ans, m[remain] + 1 + (n - j));
+                }
+            }
+            return (ans == INT_MAX ? -1 : ans);
+        }
+    };
+
+Prefix_Sum_Only_Alternative:
+  - If we consider only prefix sums (i.e., removing only from the left):
+      - Just find smallest `i` such that `pf[i] == x`
+      - This is already partially handled in the current code using:
+          if (m.find(x) != m.end()) ans = m[x] + 1
+  - It's optimal to combine both ends for flexibility, as in this full version.
+
