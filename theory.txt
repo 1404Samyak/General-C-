@@ -572,14 +572,11 @@ Approach:
   Step 4: Form Equation and Solve
     Equation:
       n * x = sum + (x - mini) * (n - 1)
-
     Solve:
       Left side: n * x  
       Right side: sum + (x - mini)(n - 1)
 
-    So:
-      n * x - (x - mini)(n - 1) = sum
-
+    So: n * x - (x - mini)(n - 1) = sum
       => x [n - (n - 1)] + mini * (n - 1) = sum  
       => x + mini * (n - 1) = sum  
       => x = sum - mini * (n - 1)
