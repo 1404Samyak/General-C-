@@ -1068,3 +1068,74 @@ Summary:
     - Use a hash set or ordered set to allow fast presence checking
     - Track the length of only those sequences that haven’t been processed before
     This leads to a clean, efficient solution with optimal time and space usage.
+
+14)Problem Name: Maximum Distance in Arrays
+Problem Statement:
+  - You are given a list of arrays, where each array is sorted in increasing order.
+  - You need to pick one element from one array and another element from a different array to maximize the absolute difference between these two elements.
+  - Return the maximum such absolute difference.
+
+Observation:
+  - Since arrays are sorted:
+      - The minimum value of any array will be at index 0 (first element).
+      - The maximum value of any array will be at the last index (last element).
+
+Goal:
+  - Maximize |a - b| such that:
+      - a is from one array, b is from another.
+      - So the pair (min, max) should be from different arrays.
+
+Brute Force Approach:
+  - Compare each pair of arrays (O(n²)), calculate all possible differences using min of one and max of another.
+  - This will TLE for large input.
+
+Optimized Greedy Approach:
+  - Since we only care about maximum and minimum across different arrays,
+    we can:
+      - Track the **overall smallest min** and **largest max** values,
+      - But ensure they come from **different arrays**.
+  - If max and min come from the same array, we look at second-best max or min.
+
+Steps:
+  1. For each array, store:
+      - `mini[i] = {first element, index}`
+      - `maxi[i] = {last element, index}`
+  2. Sort both `mini` and `maxi` lists.
+  3. Try to pick min and max from different indices:
+      - If they are from different arrays → done.
+      - If same → check next best option (second min or second max).
+
+Greedy Logic:
+  - Greedy works here because we only need the best global min and max — we only go to second-best if the best ones are from the same array.
+
+Time Complexity:
+  - O(n log n) for sorting min and max arrays.
+
+Space Complexity:
+  - O(n) for storing min and max pairs.
+
+Code Snippet (Greedy with Sorting):
+  ```cpp
+  int maxDistance(vector<vector<int>>& arrays) {
+      int n = arrays.size();
+      vector<pair<int, int>> mini(n), maxi(n);
+      for (int i = 0; i < n; i++) {
+          mini[i] = {arrays[i][0], i};             // store min with array index
+          maxi[i] = {arrays[i].back(), i};         // store max with array index
+      }
+      sort(mini.begin(), mini.end());             // sort by value
+      sort(maxi.begin(), maxi.end());             // sort by value
+      int s = 0, e = n - 1;
+      while (s <= e) {
+          if (mini[s].second != maxi[e].second) {
+              return maxi[e].first - mini[s].first;
+          } else {
+              // Try skipping one of them if both belong to same array
+              int a = maxi[e].first - mini[s + 1].first;
+              int b = maxi[e - 1].first - mini[s].first;
+              if (a <= b) e--;
+              else s++;
+          }
+      }
+      return 0;
+  }
