@@ -1,52 +1,35 @@
 #include <bits/stdc++.h>
 using namespace std;
 typedef long long ll;
-// void DFS(ll node, const vector<vector<ll>>& adj, vector<ll>& visited, vector<ll>& component, int id) {
-//     component[node] = id;      // Assign component ID
-//     visited[node] = 1;         // Mark as visited
-//     for (ll i : adj[node]) {
-//         if (!visited[i]) {
-//             DFS(i, adj, visited, component, id);
-//         }
-//     }
-// }
-void DFS1(ll node,ll parent,const vector<vector<ll>>&adj,vector<ll>&visited,bool &ans){
-    //no operation on starting node
-    visited[node]=1;
-    for(ll i:adj[node]){
-        if(visited[i]==0){
-            DFS1(i,parent,adj,visited,ans);
-        }
-        else{
-            if(i!=parent)ans=true;
-        }
-    }
-}
 int main() {
-    ll n, m;
-    cin >> n >> m;  // n = nodes, m = edges
-    vector<vector<ll>> adj(n);
-    for (ll i = 0; i < m; i++) {
-        ll u, v;
-        cin >> u >> v;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
-    }
-    bool ans=false;
-    vector<ll> visited(n, 0);
-    // vector<ll> component(n, 0);
-    // ll id = 0;
-    // for (ll i = 0; i < n; i++) {
-    //     if (!visited[i]) {
-    //         id++;
-    //         DFS(i, adj, visited, component, id);
-    //     }
-    // }
+    ll n;
+    cin>>n;
+    vector<ll>a(n);
+    for(ll i=0;i<n;i++)cin>>a[i];
+    set<int>s;
+    vector<vector<ll>>temp(n);
+    vector<vector<ll>>ans;
+    ll ind=-1;
     for(ll i=0;i<n;i++){
-        if(visited[i]==0){
-            DFS1(i,-1,adj,visited,ans);
+        if(s.find(a[i])!=s.end())continue;
+        else ind++;
+        ll last=1e8;
+        for(ll j=i;j<n;j++){
+            if(a[j]<last && s.find(a[j])==s.end()){
+                temp[ind].push_back(a[j]);
+                last=a[j];
+                s.insert(a[j]);
+            }
         }
     }
-    
+    for(int i=0;i<n;i++){
+        if(temp[i].size()>0)ans.push_back(temp[i]);
+    }
+    for(auto vec:ans){
+        for(ll num:vec){
+            cout<<num<<" ";
+        }
+        cout<<endl;
+    }
     return 0;
 }
