@@ -1139,3 +1139,31 @@ Code Snippet (Greedy with Sorting):
       }
       return 0;
   }
+
+15)Problem: Minimum Increments to Make Array Elements Unique
+
+Goal:
+  We are given an array `nums` of integers.
+  The objective is to make **all elements unique** using the **minimum number of operations**.
+  In one operation, you can **increment any element by 1**.
+  Return the total number of increments (i.e., operations) required to achieve uniqueness.
+
+Code Snippet:
+  ```cpp
+  #include <bits/stdc++.h>
+  using namespace std;
+  int minIncrementForUnique(vector<int>& nums) {
+      int n = nums.size();
+      sort(nums.begin(), nums.end());     // Step 1: Sort the array
+      int ans = 0;                         // Total number of increments
+      int last = nums[0];                 // Tracks the last unique value used
+      for (int i = 1; i < n; i++) {
+          if (nums[i] <= last) {          // Current value is not unique
+              ans += (last + 1 - nums[i]);  // Add the needed increment to 'ans'
+              last = last + 1;              // Update 'last' to new unique value
+          } else {
+              last = nums[i];              // Already unique; update 'last'
+          }
+      }
+      return ans;
+  }
