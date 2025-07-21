@@ -1141,7 +1141,6 @@ Code Snippet (Greedy with Sorting):
   }
 
 15)Problem: Minimum Increments to Make Array Elements Unique
-
 Goal:
   We are given an array `nums` of integers.
   The objective is to make **all elements unique** using the **minimum number of operations**.
@@ -1167,3 +1166,90 @@ Code Snippet:
       }
       return ans;
   }
+
+16)Problem: 4Sum II
+Description: >
+  Given four integer arrays nums1, nums2, nums3, and nums4 all of length n,
+  return the number of tuples (i, j, k, l) such that:
+  
+      nums1[i] + nums2[j] + nums3[k] + nums4[l] == 0
+
+Intuition: >
+  Instead of checking all 4-tuples using 4 nested loops (O(n^4)), we can optimize
+  by breaking the problem into two parts:
+
+  Let A = nums1[i] + nums2[j] and B = nums3[k] + nums4[l]
+  We want A + B == 0 → i.e., A == -B
+
+  We can compute all possible B values and store their frequencies in a hash map.
+  Then, for every A value, we just check how many times -A occurred in that map.
+  This reduces the problem to O(n^2) time.
+
+Approach:
+  Step 1:
+    - Initialize an empty map<int, int> called freq_map.
+    - Iterate over all pairs (i, j) from nums3 and nums4.
+    - For each pair, compute sum = nums3[i] + nums4[j] and increment freq_map[sum].
+    
+  Step 2:
+    - Initialize ans = 0
+    - Iterate over all pairs (i, j) from nums1 and nums2.
+    - For each pair, compute sum = nums1[i] + nums2[j]
+    - Look for -sum in freq_map:
+        - If present, add freq_map[-sum] to ans.
+  
+  Step 3:
+    - Return ans as the final count of valid quadruplets.
+
+Time Complexity: "O(n^2)"
+  Justification: >
+    - Two nested loops to compute all pairwise sums of nums3 and nums4 → O(n^2)
+    - Two nested loops to compute sums of nums1 and nums2 and lookup in map → O(n^2)
+    - Hash map lookups are O(1) on average
+
+Space Complexity: "O(n^2)"
+  Justification: >
+    - In the worst case, there can be n^2 unique sums from nums3 + nums4
+    - These are stored in the map, hence O(n^2) space
+
+Edge Cases:
+  - If arrays are empty → returns 0 (n=0, loops don't run)
+  - If all arrays contain only zeros → outputs large count (all combinations valid)
+  - Handles duplicates correctly due to frequency counting
+
+Code (C++):
+  snippet: |
+    class Solution {
+    public:
+        int fourSumCount(vector<int>& nums1, vector<int>& nums2, vector<int>& nums3, vector<int>& nums4) {
+            int n = nums1.size();
+            map<int, int> m;
+            // Step 1: Build hashmap of all sums of elements from nums3 and nums4
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    int temp = nums3[i] + nums4[j];
+                    m[temp]++;
+                }
+            }
+            int ans = 0;
+            // Step 2: For each pair from nums1 and nums2, check for -sum in map
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    int temp = nums1[i] + nums2[j];
+                    if (m.find(-temp) != m.end()) {
+                        ans += m[-temp];
+                    }
+                }
+            }
+            // Step 3: Return total count
+            return ans;
+        }
+    };
+
+Optimizations:
+  - Can use unordered_map for better average time complexity.
+  - Can swap roles of first and second half depending on data size (symmetry).
+
+Alternative Approaches:
+  - Brute force (4 loops): O(n^4) — not acceptable for n > 100.
+  - Meet-in-the-middle (used here): Best tradeoff for O(n^2) performance.
