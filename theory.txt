@@ -1253,3 +1253,53 @@ Optimizations:
 Alternative Approaches:
   - Brute force (4 loops): O(n^4) — not acceptable for n > 100.
   - Meet-in-the-middle (used here): Best tradeoff for O(n^2) performance.
+
+17)Problem: Median Finder – Detailed `addNum()` Explanation with Multisets
+Context:
+  We want to maintain a running list of numbers and find the median efficiently at any point.
+  This requires:
+    - Fast insertion
+    - Efficient median access (O(1) or O(log n))
+
+  We use two **multisets** to simulate min-heap and max-heap:
+    - `left` → stores the smaller half of elements (like max-heap)
+    - `right` → stores the larger half of elements (like min-heap)
+  
+  Invariant to Maintain:
+    - All elements in `left` ≤ all elements in `right`
+    - Size(left) >= Size(right)
+    - Difference in sizes is at most 1
+
+Explanation of `addNum()`:
+  Goal:
+    Insert the number while maintaining the heap invariant and order relation.
+
+  Logic:
+    1. Insert into `left` if it's empty or its size is less than or equal to `right`.
+       Why? So we always try to balance towards `left` unless it's too big.
+
+    2. Otherwise, insert into `right`.
+
+    3. Rebalance if required:
+       If the largest of `left` is greater than the smallest of `right`,
+       swap their elements to maintain ordering constraint.
+
+Main Code Snippet:
+  ```cpp
+  multiset<int> left, right; // Declare globally or inside class
+  void addNum(int num) {
+      if (left.empty() || left.size() <= right.size()) {
+          left.insert(num);
+      } else {
+          right.insert(num);
+      }
+      // Rebalance step: fix ordering if necessary
+      if (!left.empty() && !right.empty() && *left.rbegin() > *right.begin()) {
+          int maxLeft = *left.rbegin();   // Largest in left
+          int minRight = *right.begin();  // Smallest in right
+          left.erase(left.find(maxLeft));
+          right.erase(right.find(minRight));
+          left.insert(minRight);
+          right.insert(maxLeft);
+      }
+  }
