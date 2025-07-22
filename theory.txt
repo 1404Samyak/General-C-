@@ -1303,3 +1303,54 @@ Main Code Snippet:
           right.insert(maxLeft);
       }
   }
+
+18)Problem: Minimum Operations to Reduce Array to Zero with At Most x Reductions per Operation
+Description: |
+  You are given an array `a` of size `n` consisting of non-negative integers.
+  In one operation, you can choose at most `x` distinct elements of the array
+  and decrease each of the chosen elements by exactly 1.
+
+  The goal is to determine the minimum number of operations needed to reduce
+  all elements of the array to zero.
+
+Constraints:
+  - Each element of the array `a[i]` can only be reduced by 1 in a single operation.
+  - You may only select at most `x` elements in any one operation.
+  - No element can be reduced by more than 1 per operation.
+
+Key Observations:
+  - Every element `a[i]` needs at least `a[i]` operations, since it can be reduced by at most 1 per operation.
+  - You can only reduce up to `x` elements per operation.
+  - So, across the entire array, you must do at least `ceil(sum(a) / x)` operations to reduce the total units of value.
+  - However, an element with large value (e.g., 100) still requires 100 operations on its own, no matter how many you can reduce at a time.
+
+Formula:
+  min_operations = max(max(a), ceil(sum(a) / x))
+
+Explanation of Terms:
+  - max(a): The largest value in the array; represents the minimum number of operations required to reduce the most stubborn (largest) element.
+  - sum(a): The total value across all elements; represents the total work to be done.
+  - x: Number of elements you can reduce in a single operation.
+  - ceil(sum(a) / x): Minimum number of operations required to reduce the total work, assuming perfect parallelism.
+
+Example 1:
+  Input:
+    a: [4, 3, 2]
+    x: 2
+  sum: 9
+  max(a): 4
+  ceil(9 / 2): 5
+  Output: 5
+
+Example 2:
+  Input:
+    a: [4, 4, 4]
+    x: 2
+  sum: 12
+  max(a): 4
+  ceil(12 / 2): 6
+  Output: 6
+
+Final Result:
+  The correct and optimized formula to compute the minimum number of operations is:
+  min_operations = max(max(a), ceil(sum(a) / x))
