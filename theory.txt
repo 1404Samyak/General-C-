@@ -1354,3 +1354,83 @@ Example 2:
 Final Result:
   The correct and optimized formula to compute the minimum number of operations is:
   min_operations = max(max(a), ceil(sum(a) / x))
+
+19)Problem: Point Inside or On Triangle Using Area Method
+Description: |
+  Given a triangle defined by 3 points A(x1, y1), B(x2, y2), and C(x3, y3),
+  and a list of query points P(px, py), determine whether each point lies:
+    - strictly inside the triangle
+    - on the edge of the triangle
+    - outside the triangle
+
+Approach: |
+  We use the determinant-based area formula (also known as the shoelace formula) to determine the triangle's area.
+  For a point P(px, py), compute the area of triangle ABC, and the areas of sub-triangles:
+    - Area1 = Area of triangle PBC
+    - Area2 = Area of triangle APC
+    - Area3 = Area of triangle ABP
+
+  If the sum of Area1 + Area2 + Area3 is approximately equal to Area(ABC), then point P lies inside or on the triangle.
+
+  Then:
+    - If any of the sub-areas is 0, point lies on the corresponding edge.
+    - If all sub-areas are positive, point lies strictly inside.
+    - If sum of sub-areas is not approximately equal to Area(ABC), point lies outside.
+
+Code_Snippet_C++: |
+  double area(int x1, int y1, int x2, int y2, int x3, int y3) {
+      return 0.5 * abs(
+          x1 * (y2 - y3) +
+          x2 * (y3 - y1) +
+          x3 * (y1 - y2)
+      );
+  }
+  // Check if point (px, py) lies inside or on triangle ABC
+  string checkPoint(int x1, int y1, int x2, int y2, int x3, int y3, int px, int py) {
+      double A = area(x1, y1, x2, y2, x3, y3);
+      double A1 = area(px, py, x2, y2, x3, y3);
+      double A2 = area(x1, y1, px, py, x3, y3);
+      double A3 = area(x1, y1, x2, y2, px, py);
+      double sum = A1 + A2 + A3;
+      if (abs(sum - A) > 1e-9) return "outside";  // handle floating point precision
+      if (A1 == 0 || A2 == 0 || A3 == 0) return "on";  // lies on an edge
+      return "inside";
+  }
+
+Why_Not_Using_Exact_Equality: |
+  - Due to floating-point precision limitations, directly checking:
+      if (A1 + A2 + A3 == A)
+    may fail even if mathematically correct.
+  - This is because operations like multiplication and division with doubles
+    can introduce tiny rounding errors.
+  - So, we use:
+      if (abs(sum - A) > 1e-9)
+    to check if the difference is negligibly small (within an epsilon tolerance).
+
+Why_Order_Does_Not_Matter: |
+  - The determinant-based area formula gives the same unsigned area regardless of point order.
+  - That’s because:
+      Area(A, B, C) == Area(C, A, B) == Area(B, C, A) after taking absolute value.
+  - We use abs(...) in the area function, which ensures result is always non-negative.
+  - So, you can pass the triangle points in any order when computing area — the logic will still work.
+
+Example_Usage:
+  Triangle: [(0, 0), (5, 0), (0, 5)]
+  Query_Points:
+    - (1, 1): "inside"
+    - (0, 0): "on"
+    - (6, 6): "outside"
+    - (2, 3): "inside"
+
+Time_Complexity: |
+  - For each point check: O(1)
+  - Total for k query points: O(k)
+
+Final_Result: |
+  For each query point:
+    - Compute three sub-areas: (PBC), (PAC), (PAB)
+    - If their sum ≈ triangle's area: point is inside or on
+    - If any sub-area = 0: point is on edge
+    - Else: point is outside
+
+  This method is efficient, precise, and works for all triangle orientations.
