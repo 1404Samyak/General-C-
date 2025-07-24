@@ -1434,3 +1434,76 @@ Final_Result: |
     - Else: point is outside
 
   This method is efficient, precise, and works for all triangle orientations.
+
+20)Problem: Find the Winning Player
+Intuition:
+  - This problem simulates a game where players face off in order.
+  - The first two players are compared: the one with higher skill wins.
+  - The winner stays at the front, the loser goes to the back.
+  - We track how many consecutive wins each player has.
+  - The first player to win `k` times is the winner.
+  - If no player reaches `k` wins early, the player with the maximum skill value will eventually dominate.
+
+Approach:
+  step_by_step:
+    - Create a map `m` to store the mapping from skill value to its index (since players move around).
+    - If `k >= n`, the game ends when the strongest player wins: return the index of max skill.
+    - Initialize a deque `dq` with all the skills.
+    - Maintain a vector `count[n]` to track consecutive wins for each player (using original index).
+    - Simulate the game:
+        - Pop first two elements from the deque.
+        - Compare their skills.
+        - Winner goes to the front, loser to the back.
+        - Increment the win count for the winner.
+        - If any player’s win count reaches `k`, return their index.
+    - If no one reaches `k`, strongest player wins in ≤ n + k rounds.
+
+Code:
+  language: cpp
+  snippet: |
+    class Solution {
+    public:
+        int findWinningPlayer(vector<int>& skills, int k) {
+            int n = skills.size();
+            vector<int> count(n, 0);
+            map<int, int> m;
+            for (int i = 0; i < n; i++) m[skills[i]] = i;
+            if (k >= n)return max_element(skills.begin(), skills.end()) - skills.begin();
+            deque<int> dq;
+            for (int i = 0; i < n; i++) dq.push_back(skills[i]);
+            while (!dq.empty()) {
+                int first = dq.front(); dq.pop_front();
+                int second = dq.front(); dq.pop_front();
+                if (first > second) {
+                    dq.push_front(first);
+                    dq.push_back(second);
+                    count[m[first]]++;
+                    if (count[m[first]] == k) return m[first];
+                } else {
+                    dq.push_front(second);
+                    dq.push_back(first);
+                    count[m[second]]++;
+                    if (count[m[second]] == k) return m[second];
+                }
+            }
+            return 0;
+        }
+    };
+
+Deque_Usage:
+  reason: >
+    We use `deque` because it allows O(1) insertion and deletion from both ends.
+    - push_front(): to place the winner back at the front.
+    - push_back(): to place the loser at the back.
+    - pop_front(): to remove two players for each round.
+    This flexibility is not available in a standard queue.
+
+Edge_Cases:
+  - k >= n: return index of max skill player.
+  - All players have same skill: first one wins.
+
+Return:
+  - Index of the player who first wins `k` matches.
+  - Based on original position in the array.
+
+Tags: [Deque, Simulation, Greedy, Game Logic, Queue]
