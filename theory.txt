@@ -1577,3 +1577,56 @@ Code Snippet (with main):
       // Step 3: If total gas is enough, return start index
       return (total >= 0) ? ans : -1;
   }
+
+22)Problem: Stock Span Problem using Previous Greater Element (PGE)
+Explanation:
+  Goal:
+    - For each day `i`, compute the **maximum number of consecutive days before (and including) day `i`** 
+      where the stock price was **less than or equal to** the price on day `i`.
+
+  Core Idea:
+    - This is a classic **Previous Greater Element (PGE)** based problem.
+    - We compute the index of the **last day before i** that had a **higher price than arr[i]**.
+    - The span is then simply the width between that index and current index: `i - left[i]`.
+
+  Step-by-step Implementation:
+    1. Initialize:
+        - `n`: Length of input array `arr`.
+        - `left[i]`: For each `i`, stores index of the **Previous Greater Element (PGE)**.
+          - If no such element exists, `left[i] = -1`.
+        - `ans[i]`: Final result where each value is the span for that day.
+        - `stack<int> st`: Used to find the PGE efficiently in O(n) time.
+    2. Loop through the array from left to right:
+        - While stack is not empty and the price at the top of stack is less than or equal to current:
+            - Pop the stack (it can't be PGE anymore).
+        - If the stack is not empty after popping:
+            - The top of stack is the PGE index → `left[i] = st.top()`.
+        - If the stack is empty:
+            - There is no previous greater → `left[i] = -1` (already default).
+        - Push current index `i` onto the stack.
+    3. After the loop:
+        - For each `i`, compute span: `ans[i] = i - left[i]`.
+    4. Why it works:
+        - The span is the number of days from the last day with a **greater price** (exclusive) up to day `i` (inclusive).
+        - Using monotonic stack (decreasing) ensures we always maintain nearest previous greater efficiently.
+
+Code_Snippet:
+  - |
+    vector<int> calculateSpan(vector<int>& arr) {
+        int n = arr.size();
+        vector<int> left(n, -1), ans(n, 0); // stores index of previous greater
+        stack<int> st;
+        for (int i = 0; i < n; i++) {
+            while (!st.empty() && arr[st.top()] <= arr[i]) {
+                st.pop(); // pop while stack top is smaller or equal
+            }
+            if (!st.empty()) {
+                left[i] = st.top(); // PGE index
+            }
+            st.push(i); // push current index
+        }
+        for (int i = 0; i < n; i++) {
+            ans[i] = i - left[i]; // width from last greater to i
+        }
+        return ans;
+    }
