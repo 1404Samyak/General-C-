@@ -1637,6 +1637,7 @@ Description: |
   - `i < j`
   - `nums[i] + nums[j] == k`
   - Each element in `nums` can be used **at most once**
+  -Yes we want to count number of distinct pairs non overalpping pairs which sum to k 
 
 Explanation:
   Approach:
