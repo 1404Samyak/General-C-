@@ -1686,3 +1686,90 @@ int maxOperations(vector<int>& nums, int k) {
     return ans / 2; // Each pair counted twice
 }
 
+24)Max Points on a Line:
+  problem_statement: |
+    Given a list of 2D points, return the maximum number of points that lie on the same straight line.
+    Each line can be uniquely defined by a slope. Points that share the same slope with a reference point lie on the same line.
+
+  key_idea: |
+    - Fix one point as the reference.
+    - Compute the slope between this reference point and every other point.
+    - Store the count of points that share the same slope in a map.
+    - Keep track of duplicate points (same as the reference).
+    - The maximum number of points on a line through the reference is:
+      max count of same slope + number of duplicates.
+    - Repeat this for every point as reference and track the global maximum.
+
+  steps:
+    - For every point in the list:
+      - Treat it as the reference point.
+      - Initialize a hashmap (map<double, int>) to store slope counts.
+      - Initialize a counter for duplicate points.
+      - For each other point:
+        - If it’s a duplicate (same x and y), increment duplicate count.
+        - If it forms a vertical line (same x), use a sentinel slope (e.g. 1e9).
+        - Otherwise, compute slope using (double)(y2 - y1) / (x2 - x1) to avoid integer division.
+      - After iterating over all points:
+        - Find the maximum number of points that lie on a single line from this reference point.
+        - Update the global answer using: maxLineCount + duplicates.
+
+  edge_cases_handled:
+    - vertical_lines: Represented with a special slope (e.g., 1e9) to avoid division by zero.
+    - duplicate_points: Counted separately and added to every line count passing through the reference.
+    - integer_division: Avoided by explicitly casting to double during slope calculation.
+
+  dry_run:
+    input: [[1,1], [2,2], [3,3], [1,1]]
+    reference_point: [1,1]
+    slopes_computed:
+      - slope with [2,2]: 1
+      - slope with [3,3]: 1
+      - [1,1]: duplicate
+    result_for_this_reference: 2 points on slope 1 + 1 duplicate = 3 points on same line
+    final_output: 3
+
+  code: |
+    class Solution {
+    public:
+        int maxPoints(vector<vector<int>>& points) {
+            int ans = 1; // At least one point exists
+            for (auto& point : points) {
+                int px = point[0], py = point[1];
+                map<double, int> mp;
+                int duplicates = 0;
+                for (auto& subpoint : points) {
+                    int x = subpoint[0], y = subpoint[1];
+                    if (x == px && y == py) {
+                        // Count duplicates
+                        duplicates++;
+                    } else if (x == px) {
+                        // Vertical line — slope is undefined, use sentinel value
+                        mp[1e9]++;
+                    } else {
+                        // Normal slope calculation (cast to avoid integer division)
+                        double m = (double)(y - py) / (x - px);
+                        mp[m]++;
+                    }
+                }
+                int maxLine = 0;
+                for (auto& [slope, count] : mp) {
+                    maxLine = max(maxLine, count);
+                }
+                // Add duplicate count (including reference point itself)
+                ans = max(ans, maxLine + duplicates);
+            }
+            return ans;
+        }
+    };
+
+  complexity:
+    time: O(n^2)
+    space: O(n)
+    explanation: |
+      - For each of the n points, we compare it with every other point → O(n^2).
+      - For each reference point, we store at most (n-1) slopes in the map → O(n) space per outer iteration.
+      - Total space is still O(n) because we reuse the map every time.
+
+  notes:
+    - You could further optimize precision by storing reduced fractions using pair<int, int> as slope instead of double.
+    - This avoids floating-point errors in extreme cases or precision-sensitive input.
