@@ -1773,3 +1773,80 @@ int maxOperations(vector<int>& nums, int k) {
   notes:
     - You could further optimize precision by storing reduced fractions using pair<int, int> as slope instead of double.
     - This avoids floating-point errors in extreme cases or precision-sensitive input.
+
+25)Problem: Find K Pairs with Smallest Sums
+Description: >
+  Given two sorted arrays nums1 and nums2 of size n and m respectively, 
+  return the k pairs (u,v) such that u is from nums1 and v is from nums2 
+  and the sum u + v is the smallest possible among all possible combinations.
+
+Approach:
+  Intuition: >
+    We need the k pairs with the smallest sums. The brute-force approach would be
+    to generate all n*m pairs, compute their sums, sort them, and return the first k.
+    But this takes O(n*m*log(n*m)) time, which is slow for large arrays.
+
+    We can optimize this using a **min-heap (priority queue)**. Since the arrays are sorted,
+    the smallest pair is (nums1[0], nums2[0]), and potential next smaller sums can come from
+    moving in either direction: (nums1[1], nums2[0]) or (nums1[0], nums2[1]).
+
+    So we push the initial pair into a min-heap, and from each popped pair,
+    we explore its right and down neighbors (i+1,j) and (i,j+1) to push into the heap.
+
+  Why Priority Queue (Min-Heap) is used: >
+    We want the smallest sums first. So we use a min-heap where the top of the heap always
+    gives us the next minimum pair sum. Each element in the heap is a vector of the form:
+    [sum, i, j] -> where nums1[i] + nums2[j] = sum.
+
+  Why we track visited pairs using a set: >
+    When we explore (i+1, j) and (i, j+1), we may encounter the same pair multiple times
+    due to different paths reaching it. To avoid duplicate work and pushing the same pair 
+    into the heap more than once, we use a set to mark (i,j) pairs we've already visited.
+
+  Why we add both (i+1, j) and (i, j+1): >
+    This ensures we're not greedy in only one direction. The smallest future pairs could
+    lie in both directions, so we must explore both paths. This is similar to how BFS
+    explores neighbors — we allow the heap to order the exploration based on actual sums.
+
+Code:
+  language: cpp
+  main_code: |
+    #include <bits/stdc++.h>
+    using namespace std;
+    vector<vector<int>> kSmallestPairs(vector<int>& nums1, vector<int>& nums2, int k) {
+        int n = nums1.size(), m = nums2.size();
+        vector<vector<int>> ans;
+        // Min-heap: stores [sum, i, j]
+        priority_queue<vector<int>, vector<vector<int>>, greater<vector<int>>> pq;
+        // Set to track visited (i, j) index pairs
+        set<pair<int, int>> visited;
+        // Start with the smallest pair
+        pq.push({nums1[0] + nums2[0], 0, 0});
+        visited.insert({0, 0});
+        while (!pq.empty() && ans.size() < k) {
+            auto top = pq.top(); pq.pop();
+            int i = top[1], j = top[2];
+            ans.push_back({nums1[i], nums2[j]});
+            // Try moving to (i+1, j) if not visited
+            if (i + 1 < n && visited.find({i + 1, j}) == visited.end()) {
+                pq.push({nums1[i + 1] + nums2[j], i + 1, j});
+                visited.insert({i + 1, j});
+            }
+            // Try moving to (i, j+1) if not visited
+            if (j + 1 < m && visited.find({i, j + 1}) == visited.end()) {
+                pq.push({nums1[i] + nums2[j + 1], i, j + 1});
+                visited.insert({i, j + 1});
+            }
+        }
+        return ans;
+    }
+
+Time Complexity: >
+  - In the worst case, we insert up to min(k, n*m) pairs into the heap.
+  - Each insertion and deletion from the heap takes log(heap size) time.
+  - So total time is O(k log k).
+
+Space Complexity: >
+  - Heap size up to O(k)
+  - Set to track visited pairs: also up to O(k)
+  - Output array of size k
