@@ -1630,3 +1630,58 @@ Code_Snippet:
         }
         return ans;
     }
+
+23)Problem: Max Number of K-Sum Pairs
+Description: |
+  Given an array of integers `nums` and an integer `k`, return the maximum number of unique pairs `(i, j)` such that:
+  - `i < j`
+  - `nums[i] + nums[j] == k`
+  - Each element in `nums` can be used **at most once**
+
+Explanation:
+  Approach:
+    - Use a hash map (`map<int, int> m`) to count the frequency of each number in the array.
+    - Iterate over all unique numbers in the map:
+        - For each number `val`, calculate its complement `k - val` (let's call it `temp`)
+        - If `temp` also exists in the map, we can pair `val` and `temp`
+        - Add the minimum of the two frequencies to `ans`
+    - Divide the final answer by 2 because:
+        - Each valid pair is counted **twice** (once for `val`, once for `k - val`)
+        - We want the total number of **distinct pairs**, so we halve the count
+
+  Why It Works:
+    - Handles duplicates using frequency count
+    - Works for both:
+        - Different elements forming a pair (e.g. 1 + 5 = 6)
+        - Same elements forming a pair (e.g. 3 + 3 = 6), but only if `freq[3] >= 2`
+    - Works for **odd frequencies** too: `min(freq[a], freq[b])` ensures only complete pairs are counted
+
+  Example:
+    Input: nums = [1,2,3,4], k = 5
+    Pairs: (1,4), (2,3) → Answer = 2
+    Input: nums = [3,1,3,4,3], k = 6
+    - freq[3] = 3
+    - freq[3] & 3 can make at most 1 full pair → Answer = 1
+
+Code:
+  main_code: |
+#include <bits/stdc++.h>
+using namespace std;
+int maxOperations(vector<int>& nums, int k) {
+    int n = nums.size();
+    // Frequency map
+    map<int, int> m;
+    for(int i = 0; i < n; i++) m[nums[i]]++;
+
+    int ans = 0;
+    for(auto it = m.begin(); it != m.end(); it++) {
+        int val = it->first;
+        int temp = k - val;
+        if(m.find(temp) != m.end()) {
+            auto tempit = m.find(temp);
+            ans += min(it->second, tempit->second);
+        }
+    }
+    return ans / 2; // Each pair counted twice
+}
+
