@@ -1910,3 +1910,61 @@ Space Complexity: >
       There are multiple ways to choose 'L', 'C', and 'T' in increasing index order
       such that they form subsequences "LCT". Total such valid combinations = 12.
 
+27)problem_name: Maximum Number of "LCT" Subsequences After One Insertion
+intuition: |
+  We are given a string consisting of characters 'L', 'C', and 'T'. Our goal is to count the number of "LCT" subsequences and also check the best position to insert one extra character ('L', 'C', or 'T') to maximize the count of "LCT" subsequences.
+  - A valid "LCT" subsequence means choosing indices `i < j < k` such that `s[i]='L'`, `s[j]='C'`, `s[k]='T'`.
+  - If we insert an additional 'L', 'C', or 'T' anywhere in the string (including before the first character and after the last), how much can the count increase?
+  - The strategy is to use prefix and suffix arrays to precompute helpful information, and then evaluate all `n + 1` insertion points.
+
+approach: |
+  1. **Prefix Count of 'L'** (`pfl[i]`): number of 'L's from index 0 to i.
+  2. **Suffix Count of 'T'** (`sft[i]`): number of 'T's from index i to n-1.
+  3. **Prefix Count of "LC" pairs** (`pflc[i]`): for each 'C' at index `i`, count how many 'L's came before it.
+  4. **Suffix Count of "CT" pairs** (`sfct[i]`): for each 'C' at index `i`, count how many 'T's come after it.
+
+  5. **Count Existing "LCT" Subsequences**:
+     - Iterate from right to left. For every 'T' at index `i`, add the number of "LC" pairs before `i` to `temp`.
+
+  6. **Try Inserting 'L', 'C', or 'T' at Every Position (0 to n)**:
+     - `Insert L at position i`: This 'L' can combine with all "CT" subsequences starting at index `i` or after. So we add `sfct[i]` to `temp`.
+     - `Insert C at position i`: This 'C' can pair with all 'L's before `i` and 'T's after `i`. So we add `pfl[i-1] * sft[i]` to `temp`.
+     - `Insert T at position i`: This 'T' can pair with all "LC" subsequences before index `i`. So we add `pflc[i-1]` to `temp`.
+
+  7. **Take the Maximum** of all these values to get the answer.
+
+code_steps:
+  - Step 1: Compute `pfl` → prefix sum of 'L'
+  - Step 2: Compute `sft` → suffix sum of 'T'
+  - Step 3: Compute `pflc` → for every 'C', count how many 'L's came before it
+  - Step 4: Compute `sfct` → for every 'C', count how many 'T's came after it
+  - Step 5: Count all original "LCT" subsequences using `T` positions and `pflc` values before them
+  - Step 6: Try inserting 'L', 'C', or 'T' at every index from 0 to n:
+      - `insert_L = temp + sfct[i]` if `i < n`
+      - `insert_C = temp + pfl[i - 1] * sft[i]` if `i > 0` and `i < n`
+      - `insert_T = temp + pflc[i - 1]` if `i > 0`
+  - Step 7: Take max of all these possibilities as final answer.
+
+time_complexity: |
+  - O(n) for building each prefix/suffix array (`pfl`, `sft`, `pflc`, `sfct`)
+  - O(n) for counting original "LCT"
+  - O(n) for trying insertions at `n + 1` positions
+  - Total: **O(n)**
+
+space_complexity: |
+  - O(n) for each of the 4 prefix/suffix arrays → `pfl`, `sft`, `pflc`, `sfct`
+  - Total: **O(n)**
+
+key_observation_on_insertions: |
+  - The insertion is tried at `n + 1` positions (from index 0 to n, inclusive).
+  - At each position, inserting a single character is treated as "creating new potential LCT subsequences":
+    - New L adds value via future CTs (`sfct[i]`)
+    - New C adds value via past Ls and future Ts (`pfl[i-1] * sft[i]`)
+    - New T adds value via past LCs (`pflc[i-1]`)
+  - We always add `temp` because we are considering improvement *on top of* the original subsequences.
+
+final_formula_examples: |
+  - insert_L = temp + sfct[i]
+  - insert_C = temp + pfl[i-1] * sft[i]
+  - insert_T = temp + pflc[i-1]
+
