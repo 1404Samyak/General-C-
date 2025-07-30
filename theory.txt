@@ -1850,3 +1850,63 @@ Space Complexity: >
   - Heap size up to O(k)
   - Set to track visited pairs: also up to O(k)
   - Output array of size k
+
+26)Count_LCT_Subsequences:
+  problem: Count the number of subsequences of the form "LCT" in a given string
+  description: |
+    Given a string consisting of characters 'L', 'C', and 'T', we are to count 
+    how many subsequences of the form "LCT" exist. A subsequence means that the 
+    characters appear in order but not necessarily contiguously.
+    
+    For example, in the string "LLCCCTT", there are 12 different "LCT" subsequences.
+
+  approach: |
+    1. Use prefix sums to track the number of 'L's and "LC" subsequences up to each index.
+    2. For each character:
+        - If it's 'L', increment prefixL[i]
+        - If it's 'C', use the number of 'L's before it to add to prefixLC[i]
+        - If it's 'T', add the number of "LC" subsequences before it to the final count.
+    3. This approach ensures that we respect the order of characters in the subsequence.
+
+  code: |
+    #include <bits/stdc++.h>
+    using namespace std;
+    typedef long long ll;
+    int main() {
+        // Given a string, count number of subsequences of the form "LCT"
+        string s;
+        cin >> s;
+        ll n = s.size();
+        // Step 1: Count number of 'L's up to each index
+        vector<ll> pfl(n); // pfl[i] = prefix count of 'L' till index i
+        pfl[0] = (s[0] == 'L') ? 1 : 0;
+        for (ll i = 1; i < n; i++) {
+            pfl[i] = pfl[i - 1] + ((s[i] == 'L') ? 1 : 0);
+        }
+        // Step 2: Count number of "LC" subsequences up to each index
+        vector<ll> pflc(n); // pflc[i] = prefix count of "LC" till index i
+        pflc[0] = 0;
+        for (ll i = 1; i < n; i++) {
+            pflc[i] = pflc[i - 1];
+            if (s[i] == 'C') {
+                pflc[i] += pfl[i]; // every 'L' before this 'C' makes an "LC"
+            }
+        }
+        // Step 3: For every 'T', add the number of "LC" before it
+        ll ans = 0;
+        for (ll i = n - 1; i >= 0; i--) {
+            if (s[i] == 'T') {
+                ans += pflc[i]; // each "LC" before this 'T' gives an "LCT"
+            }
+        }
+        cout << ans << endl;
+        return 0;
+    }
+
+  example:
+    input: "LLCCCTT"
+    output: 12
+    explanation: |
+      There are multiple ways to choose 'L', 'C', and 'T' in increasing index order
+      such that they form subsequences "LCT". Total such valid combinations = 12.
+
