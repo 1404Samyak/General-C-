@@ -25,12 +25,10 @@ vector<int> maxSumCombinations(vector<int> &nums1, vector<int> &nums2, int k) {
     }
     return ans;
 }
-
 int main() {
     vector<int> nums1 = {1, 4, 2};
     vector<int> nums2 = {3, 5};
     int k = 3;
-    
     vector<int> result = maxSumCombinations(nums1, nums2, k);
     for (int val : result) {
         cout << val << " ";
