@@ -283,7 +283,6 @@
     - This greedy two-stack method is more efficient than backtracking all '*' cases
 
 4)problem: Maximum Number of Non-Overlapping Meetings
-
 constraints:
   - You are given two arrays: start[i], end[i] of size n
   - You must select the maximum number of meetings such that:
@@ -343,7 +342,6 @@ note:
   - If problem requires strict non-overlap (start > end), use '>'
 
 5)problem: Merge Overlapping Intervals
-
 description: |
   Given a list of intervals where each interval is a pair [start, end],
   merge all overlapping intervals and return a list of non-overlapping intervals
