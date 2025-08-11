@@ -1966,3 +1966,60 @@ final_formula_examples: |
   - insert_C = temp + pfl[i-1] * sft[i]
   - insert_T = temp + pflc[i-1]
 
+28)BinaryExponentiationModular:
+  title: "Binary Exponentiation for a^b mod M"
+  description: |
+    Binary exponentiation (also called fast exponentiation) is an efficient
+    way to compute `a^b mod M` in O(log b) time. Instead of multiplying
+    `a` repeatedly `b` times, we use the binary representation of `b` to
+    square the base and reduce the exponent quickly.
+
+    The main idea:
+    - Represent `b` in binary (e.g., b = 13 → 1101 in binary).
+    - For each bit from LSB to MSB:
+      - If the bit is `1`, multiply the result by the current base (mod M).
+      - Square the base (mod M) for the next bit.
+      - Shift `b` right by 1 (equivalent to integer division by 2).
+
+    Modular arithmetic is applied in each multiplication and squaring step to
+    prevent overflow and to keep numbers small.
+
+  code_snippet: |
+    const int M = 1e9 + 7;
+
+    long long modpow(long long a, long long b, long long M) {
+        long long res = 1;         // Initialize result as 1 (identity for multiplication)
+        a %= M;                    // Reduce 'a' modulo M initially to avoid overflow
+
+        while (b > 0) {            // Loop until exponent becomes 0
+            if (b & 1) {           // If current bit of b is 1
+                res = (res * a) % M; // Multiply result with current base and take modulo
+            }
+            a = (a * a) % M;       // Square the base for the next bit
+            b >>= 1;               // Shift exponent right by 1 (divide by 2)
+        }
+        return res;
+    }
+
+  step_by_step:
+    - Step 1: "Initialize `res = 1` because anything multiplied by 1 remains unchanged."
+    - Step 2: "Take `a %= M` to keep numbers manageable from the start."
+    - Step 3: "While `b > 0` means we still have bits to process in exponent."
+    - Step 4: "`if (b & 1)` checks whether the least significant bit (LSB) of `b` is 1."
+    - Step 5: "If LSB is 1, multiply `res` by current base `a` and take modulo M."
+    - Step 6: "Square the base (`a = a * a`) to prepare for the next higher bit of b."
+    - Step 7: "Reduce base modulo M again to keep values small."
+    - Step 8: "Shift `b` right (`b >>= 1`) to process the next bit in the next loop iteration."
+    - Step 9: "Repeat until exponent becomes 0, then `res` holds the answer."
+
+  example:
+    input: "a = 3, b = 13, M = 1000000007"
+    binary_of_b: "13 in binary = 1101"
+    dry_run:
+      - Start: "res = 1, a = 3, b = 13 (1101)"
+      - Iteration 1 (LSB=1): "res = 1*3 % M = 3, a = 3^2 % M = 9, b = 6"
+      - Iteration 2 (LSB=0): "res = 3, a = 9^2 % M = 81, b = 3"
+      - Iteration 3 (LSB=1): "res = 3*81 % M = 243, a = 81^2 % M = 6561, b = 1"
+      - Iteration 4 (LSB=1): "res = 243*6561 % M = 1594323, a = 6561^2 % M = 43046721, b = 0"
+    output: "1594323"
+
