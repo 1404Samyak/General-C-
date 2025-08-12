@@ -1986,7 +1986,6 @@ final_formula_examples: |
 
   code_snippet: |
     const int M = 1e9 + 7;
-
     long long modpow(long long a, long long b, long long M) {
         long long res = 1;         // Initialize result as 1 (identity for multiplication)
         a %= M;                    // Reduce 'a' modulo M initially to avoid overflow
