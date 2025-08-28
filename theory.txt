@@ -2021,3 +2021,71 @@ final_formula_examples: |
       - Iteration 4 (LSB=1): "res = 243*6561 % M = 1594323, a = 6561^2 % M = 43046721, b = 0"
     output: "1594323"
 
+29)Smallest Missing Sum Problem:
+Explanation:
+  We want to find the smallest positive integer that cannot be formed using the sum of some subset of the given array.
+
+  Intuition:
+    - Let `ans` denote the smallest number we cannot form so far.
+    - Initially `ans = 1` because before using any elements, 1 is the smallest candidate we may miss.
+    - After processing some elements, we assume:
+        "We can form all sums from 1 up to ans-1."
+
+  Case 1: a[i] <= ans
+    - Since we can already form all sums 1..(ans-1), adding a[i] to each gives:
+        a[i]+1, a[i]+2, ..., a[i]+(ans-1)
+    - This new range is [a[i]+1, ans-1+a[i]].
+    - Notice: since a[i] <= ans, the smallest in this new range is a[i]+1 ≤ ans.
+      That means it connects directly after ans-1 with no gap.
+    - Hence we now cover all sums up to ans-1+a[i].
+    - Also, we can form a[i] itself, so indeed coverage is continuous.
+    - Therefore, the new possible answer becomes ans = ans + a[i].
+
+  Case 2: a[i] > ans
+    - Right now, we can make 1..(ans-1).
+    - If we try to add a[i], we get numbers like a[i]+1, a[i]+2,... but since a[i] > ans, this new range starts beyond ans.
+    - That means `ans` is still missing and can never be formed because all future numbers are even larger.
+    - So the true answer is `ans`.
+
+Formal Proof (Induction Style):
+  Base Case:
+    - Before taking any elements, we can make nothing. So the smallest missing sum is 1 (ans=1).
+  Inductive Hypothesis:
+    - Assume after processing first k elements, we can form every number in [1, ans-1].
+  Step:
+    - If next element a[k] <= ans, then new range [a[k], ans-1+a[k]] merges with [1, ans-1]. So now we can form [1, ans+a[k]-1]. Thus ans updates to ans+a[k].
+    - If next element a[k] > ans, then there is a gap at ans which cannot be filled. Hence ans is final answer.
+  Therefore, the greedy rule is correct.
+
+Example 1:
+  Input: [1,2,5,10]
+  Sorted: [1,2,5,10]
+  ans=1
+  - First element 1 <= 1 → we extend to ans=1+1=2.
+  - Next element 2 <= 2 → we extend to ans=2+2=4.
+  - Next element 5 > 4 → stop, answer=4.
+
+Example 2:
+  Input: [2,3,4]
+  Sorted: [2,3,4]
+  ans=1
+  - First element 2 > 1 → immediately stop, answer=1.
+
+C++ Code:
+  #include <bits/stdc++.h>
+  using namespace std;
+  typedef long long ll;
+  int main(){
+      ll n;
+      cin >> n;
+      vector<ll> a(n);
+      for(ll i=0;i<n;i++) cin >> a[i];
+      sort(a.begin(), a.end());
+      ll ans = 1;
+      for(ll i=0;i<n;i++){
+          if(a[i] <= ans) ans = ans + a[i];
+          else break;
+      }
+      cout << ans << endl;
+      return 0;
+  }
