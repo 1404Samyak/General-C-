@@ -2089,3 +2089,54 @@ C++ Code:
       cout << ans << endl;
       return 0;
   }
+
+30)Problem: Longest Mountain in Array
+Intuition:
+  - A "mountain" is defined as a continuous subarray where:
+    - It strictly increases (goes uphill),
+    - Reaches a peak,
+    - Then strictly decreases (goes downhill).
+    - Length of mountain must be at least 3 (since we need left slope, peak, right slope).
+  - Example: [2, 1, 4, 7, 3, 2, 5]
+    - Mountain found: [1, 4, 7, 3, 2] with length = 5
+  - This is **different from Longest Bitonic Subsequence (LBS)** because:
+    - LBS allows picking *any elements in order* (not necessarily contiguous).
+    - Here, we require **continuous subarrays** only.
+    - Hence, LBS needs DP, but this problem can be solved with linear scans.
+
+Approach:
+  1. Create two helper arrays:
+     - high[i] → length of strictly increasing subarray ending at index i.
+     - low[i] → length of strictly decreasing subarray starting at index i.
+  2. Fill `high` by scanning left-to-right:
+     - if arr[i] > arr[i-1], then high[i] = high[i-1] + 1
+     - else reset high[i] = 1
+  3. Fill `low` by scanning right-to-left:
+     - if arr[i] > arr[i+1], then low[i] = low[i+1] + 1
+     - else reset low[i] = 1
+  4. Now, check each index i:
+     - If high[i] > 1 and low[i] > 1, then arr[i] is a **valid peak**.
+     - The mountain length = high[i] + low[i] - 1
+       (subtract 1 to avoid counting peak twice).
+  5. Take the maximum over all i.
+
+Code Snippet (C++):
+  int longestMountain(vector<int>& arr) {
+      int n = arr.size();
+      vector<int> high(n, 1), low(n, 1);
+      // Increasing sequence from left
+      for (int i = 1; i < n; i++) {
+          if (arr[i] > arr[i - 1]) high[i] = high[i - 1] + 1;
+      }
+      // Decreasing sequence from right
+      for (int i = n - 2; i >= 0; i--) {
+          if (arr[i] > arr[i + 1]) low[i] = low[i + 1] + 1;
+      }
+      int ans = 0;
+      for (int i = 0; i < n; i++) {
+          if (high[i] > 1 && low[i] > 1) {
+              ans = max(ans, high[i] + low[i] - 1);
+          }
+      }
+      return ans;
+  }
