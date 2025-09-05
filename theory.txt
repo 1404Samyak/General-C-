@@ -2225,3 +2225,103 @@ Code Snippet (C++):
     }
   note_on_greedy: |
     Splitting the largest term first maximizes flexibility: large terms can still be split many times, while small ones (like 1) cannot be split at all. Thus the greedy choice avoids dead ends.
+
+32)Problem: "Kth Smallest Element in a Sorted Matrix"
+Explanation:
+  Intuition:
+    - We are given a matrix where:
+        * Each row is sorted in increasing order (left → right).
+        * Each column is sorted in increasing order (top → bottom).
+    - We want the kth smallest element in the entire matrix.
+    - A brute force approach would be:
+        * Flatten all elements into a single array.
+        * Sort the array.
+        * Take the kth element.
+      But this is inefficient (O(m*n log(m*n)) time).
+    - Instead, we use a **min-heap (priority queue)** to extract elements in sorted order efficiently.
+
+  Why Min-Heap?:
+    - A min-heap always gives us the current smallest element at the top.
+    - Since the matrix rows are sorted:
+        * If we take one element from a row, the **next smallest candidate** from that row is the element immediately to its right.
+    - By repeatedly popping the smallest element and pushing the next candidate from the same row, we generate numbers in sorted order until we reach the kth one.
+
+  Stored in Heap:
+    - Each heap entry is a triplet: [value, row_index, col_index].
+    - Why?
+        * `value` → Needed to compare and decide the smallest.
+        * `row_index` → To know which row this value came from.
+        * `col_index` → To know where we are in that row, so we can push the "next element" in the same row.
+
+  Step-by-Step Process:
+    1. Initialize the heap:
+       - Push the first element of every row (matrix[i][0]) into the heap.
+       - Each push is of form: [matrix[i][0], i, 0].
+       - Example: if matrix = [[1,5,9],[10,11,13],[12,13,15]], heap initially has:
+           [1,0,0], [10,1,0], [12,2,0].
+    2. Repeatedly extract the smallest element (heap top).
+       - Each time we pop, that element is the next smallest in the entire matrix.
+       - Store it into "ans".
+    3. After popping an element from row r and col c:
+       - If col+1 < n, push the next element in the same row:
+           [matrix[r][c+1], r, c+1].
+       - This works because rows are sorted, so the next smallest candidate from that row is at (r, c+1).
+    4. Stop after extracting k elements. The kth popped element is the answer.
+
+  Example Walkthrough:
+    Matrix:
+      [ [1,  5,  9],
+        [10, 11, 13],
+        [12, 13, 15] ]
+    k = 6
+
+    Initial Heap:
+      - [1,0,0], [10,1,0], [12,2,0]
+
+    Iterations:
+      - Pop1: [1,0,0] → ans = [1]
+        Push [5,0,1]
+      - Pop2: [5,0,1] → ans = [1,5]
+        Push [9,0,2]
+      - Pop3: [9,0,2] → ans = [1,5,9]
+        (no push, since col=2 is last column)
+      - Pop4: [10,1,0] → ans = [1,5,9,10]
+        Push [11,1,1]
+      - Pop5: [11,1,1] → ans = [1,5,9,10,11]
+        Push [13,1,2]
+      - Pop6: [12,2,0] → ans = [1,5,9,10,11,12]
+        ✅ 6th smallest is 12
+
+  Why Only Push Next Element in Same Row:
+    - After we pop an element [val, r, c]:
+        * matrix[r][c+1] is guaranteed to be ≥ val (since row is sorted).
+        * matrix[r+1][c] is not directly considered here, because it was already inserted initially when we added row0’s first element, row1’s first element, etc.
+    - Thus, to maintain order, we only advance along rows when necessary.
+
+Code-with-Comments:
+  class Solution {
+  public:
+      int kthSmallest(vector<vector<int>>& matrix, int k) {
+          int m = matrix.size(), n = matrix[0].size();
+          // Min-heap storing [value, row, col]
+          priority_queue<vector<int>, vector<vector<int>>, greater<vector<int>>> pq;
+          // Step 1: Push the first element of every row into heap
+          for (int i = 0; i < m; i++) {
+              pq.push({matrix[i][0], i, 0});
+          }
+          // Step 2: Extract elements in increasing order
+          vector<int> ans;
+          while (ans.size() < k) {
+              // Top element is always the smallest currently available
+              int num = pq.top()[0], r = pq.top()[1], c = pq.top()[2];
+              ans.push_back(num);
+              pq.pop();
+              // Step 3: Push next element in the same row, if it exists
+              if (c + 1 < n) {
+                  pq.push({matrix[r][c+1], r, c+1});
+              }
+          }
+          // Step 4: kth element is the answer
+          return ans[k-1];
+      }
+  };
