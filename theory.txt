@@ -2140,3 +2140,88 @@ Code Snippet (C++):
       }
       return ans;
   }
+
+31)"Construct N as Sum of K Powers of Two":
+  problem_statement: |
+    Given two integers n and k, determine whether n can be represented as the sum of exactly k powers of two (powers may repeat). If possible, output one such set of k powers of two whose sum is n; otherwise output -1.
+  intuition: |
+    The binary form of n already gives a sum of powers of 2. The number of set bits in n is the **minimum number** of powers required. Why? Because each set bit corresponds to one power of 2 that cannot be compressed further.
+    The **maximum number** of powers possible is n itself (all 1's). So the feasible range for k is:popcount(n) <= k <= n
+
+  reasoning_minimum: |
+    - Each set bit contributes one distinct 2^i.
+    - You cannot merge different 2^i into a single power-of-two without changing the sum.
+    - Therefore, minimum required = number of set bits.
+
+  reasoning_maximum: |
+    - The smallest power of two is 1.
+    - Splitting every bit until only 1's remain gives exactly n terms.
+    - So maximum possible k = n.
+
+  constructive_strategy: |
+    - Start with binary decomposition of n (all set bits).
+    - While current number of terms < k, split one term into two halves.
+    - Each split increases term count by 1, preserves sum.
+    - Always split the largest term first (greedy) to keep options open.
+
+  why_priority_queue: |
+    - We need to repeatedly access the largest current power.
+    - A max-heap (priority_queue in C++) gives O(log M) per operation.
+    - This ensures we always split the largest efficiently.
+
+  correctness: |
+    - Invariant: sum is preserved (x -> x/2 + x/2).
+    - Invariant: count increases by 1 per split.
+    - Termination: if k is in [popcount(n), n], we can reach exactly k.
+
+  example_small: |
+    n=13, k=5
+    - Binary: 13=8+4+1, popcount=3.
+    - Valid since 3<=5<=13.
+    - Start: {8,4,1}.
+    - Split 8 -> {4,4,4,1}.
+    - Split 4 -> {4,2,2,4,1} (size=5). Done.
+
+  example_large: |
+    n=10^12, k=100
+    - popcount ≈ 19.
+    - 19 <= 100 <= 10^12, so feasible.
+    - Split largest terms until size=100.
+
+  c++_implementation: |
+    #include <bits/stdc++.h>
+    using namespace std;
+    typedef long long ll;
+    int main(){
+        ll n,k; cin>>n>>k;
+        // Count set bits manually
+        ll temp=n, popcnt=0;
+        while(temp){
+            if(temp%2) popcnt++;
+            temp/=2;
+        }
+        if(!(popcnt<=k && k<=n)){
+            cout<<-1<<"\n";
+            return 0;
+        }
+        // Build initial heap of powers from binary form
+        priority_queue<ll> pq;
+        temp=n; ll idx=0;
+        while(temp){
+            if(temp%2) pq.push(1LL<<idx);
+            idx++; temp/=2;
+        }
+        // Split until we have exactly k terms
+        while((ll)pq.size()<k && pq.top()>1){
+            ll num=pq.top(); pq.pop();
+            pq.push(num/2);
+            pq.push(num/2);
+        }
+        // Output terms
+        vector<ll> res;
+        while(!pq.empty()){res.push_back(pq.top()); pq.pop();}
+        for(ll x:res) cout<<x<<" ";
+        cout<<"\n";
+    }
+  note_on_greedy: |
+    Splitting the largest term first maximizes flexibility: large terms can still be split many times, while small ones (like 1) cannot be split at all. Thus the greedy choice avoids dead ends.
