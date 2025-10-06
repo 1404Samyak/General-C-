@@ -2449,3 +2449,73 @@ comparison:
   when_to_use:
     - Concept 1: When all combinations matter, index reuse allowed.
     - Concept 2: When each element can be paired **at most once**, like forming distinct sets or matches.
+
+34)Problem: Maximum Frequency of Integer Ratios (Skipping Division by Zero)
+Intuition:
+  The goal is to find the most frequent ratio b[i]/a[i] among integer pairs (a[i], b[i]).
+  Instead of using floating-point division, which can cause rounding issues,
+  we use **reduced integer pairs** to represent each ratio uniquely.
+
+  Using doubles:
+    - (1/3) and (2/6) might not compare equal due to precision errors.
+    - Floating-point operations are slower and unsafe for large integers.
+
+  So we use integer pairs:
+    - Reduce (a[i], b[i]) by dividing both by their gcd.
+    - This ensures that equivalent ratios like (2, -4) and (1, -2) are treated as identical.
+
+  Sign normalization:
+    - If a[i] < 0, multiply both a[i] and b[i] by -1.
+    - This ensures denominator (a[i]) is always positive.
+    - Thus, (-1, 2) and (1, -2) are treated as the same ratio.
+
+Approach:
+  1. Read n and two arrays a and b.
+  2. For each i:
+      - If a[i] == 0, skip (division by zero is invalid).
+      - Otherwise:
+          * Compute gcd(|a[i]|, |b[i]|).
+          * Divide both a[i] and b[i] by gcd.
+          * Normalize sign: if a[i] < 0, flip both signs.
+          * Increment count of pair (a[i], b[i]).
+  3. The maximum frequency among all pairs is our result.
+
+Key Points:
+  - gcd() ensures ratios are reduced to their simplest form.
+  - Skipping division by zero avoids undefined ratios.
+  - Using `map<pair<ll,ll>, ll>` ensures each ratio is tracked efficiently.
+
+Time Complexity:
+  O(n log M), where M is the maximum magnitude of numbers (for gcd).
+
+Space Complexity:
+  O(n), for storing frequency map.
+
+C++ Code:
+  #include <bits/stdc++.h>
+  using namespace std;
+  typedef long long ll;
+  int main() {
+      ll n;
+      cin >> n;
+      vector<ll> a(n), b(n);
+      for (ll i = 0; i < n; i++) cin >> a[i];
+      for (ll i = 0; i < n; i++) cin >> b[i];
+      map<pair<ll, ll>, ll> freq;
+      for (ll i = 0; i < n; i++) {
+          if (a[i] == 0) continue; // skip division by zero
+          ll g = __gcd(abs(a[i]), abs(b[i]));
+          a[i] /= g;
+          b[i] /= g;
+          // Normalize sign to keep denominator positive
+          if (a[i] < 0) {
+              a[i] = -a[i];
+              b[i] = -b[i];
+          }
+          freq[{a[i], b[i]}]++;
+      }
+      ll maxi = 0;
+      for (auto &p : freq)maxi = max(maxi, p.second);
+      cout << maxi << "\n";
+      return 0;
+  }
