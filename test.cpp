@@ -1,28 +1,24 @@
 #include <bits/stdc++.h>
 using namespace std;
-void solve() {
-    int n;
-    cin >> n;
-    vector<int> a(n);
-    for (auto &i : a) cin >> i;
-    long long sum = 0, need = 0;
-    for (int i = 0; i < n; ++i) {
-        need += i;
-        //because our best possible case is 0,1,2,3,4,5...i.e each position has at least i elements to its left so that it can be swapped to leftmost position
-        //such that entire seq is strictly increasing last element can be as big as possible so at any moment if sum<need we can say no
-        //as we can never make it strictly increasing
-        sum += a[i];
-        if (sum < need) {
-            cout << "NO\n";
-            return;
-        }
-    }
-    cout << "YES\n";
-}
-
+typedef long long ll;
 int main() {
-    int t;
-    cin >> t;
-    while (t--) solve();
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    ll t;
+    cin>>t;
+    while(t--){
+        long long n;
+        cin >> n;
+        // Find highest set bit in (n - 1)
+        int k = 63 - __builtin_clzll(n - 1);  // floor(log2(n - 1))
+        long long pivot = 1LL << k;           // 2^k
+        vector<long long> perm;
+        // First half: 2^k - 1 down to 0
+        for (long long i = pivot - 1; i >= 0; i--)perm.push_back(i);
+        // Second half: 2^k up to n - 1
+        for (long long i = pivot; i < n; i++)perm.push_back(i);
+        for (auto x : perm)cout << x << " ";
+        cout << "\n";
+    }
     return 0;
 }
