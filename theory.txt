@@ -2519,3 +2519,99 @@ C++ Code:
       cout << maxi << "\n";
       return 0;
   }
+
+35)title: Finding the Smallest Number That Does Not Divide n (C++ Version)
+theory:
+  overview: |
+    We want to find the smallest positive integer `k` such that `k` does not divide a given integer `n`.
+    Directly checking all integers up to `n` is infeasible when `n` is large.
+    Instead, we use the property of the **Least Common Multiple (LCM)**.
+    If `n` is divisible by all integers from 1 to `m`, then it must be divisible by:
+      lcm(1, 2, 3, ..., m)
+    Thus, the first `k` for which:
+      n % lcm(1, 2, ..., k) != 0
+    is the smallest integer that does not divide `n`.
+
+  mathematical_basis: |
+    The LCM can be built recursively:
+      lcm(a, b) = (a * b) / gcd(a, b)
+    and extended as:
+      lcm(1, 2, ..., k) = lcm(lcm(1, 2, ..., k-1), k)
+
+    We start with:
+      L = 1
+    and iteratively update it:
+      L = lcm(L, k)
+    stopping when L no longer divides n.
+
+  key_property: |
+    The value of lcm(1, 2, ..., k) grows extremely fast:
+      lcm(1..10) = 2520
+      lcm(1..20) = 232792560
+      lcm(1..30) ≈ 2.3 × 10^32
+    Therefore, we only need to iterate `k` up to around 50–100 even for astronomically large n.
+
+code_snippet: |
+  #include <bits/stdc++.h>
+  #include <boost/multiprecision/cpp_int.hpp>
+  using namespace std;
+  using namespace boost::multiprecision;
+  cpp_int gcd_big(cpp_int a, cpp_int b) {
+      while (b != 0) {
+          cpp_int temp = b;
+          b = a % b;
+          a = temp;
+      }
+      return a;
+  }
+  cpp_int lcm_big(cpp_int a, cpp_int b) {
+      return (a / gcd_big(a, b)) * b;
+  }
+  int smallest_not_dividing(cpp_int n) {
+      if (n == 0) {
+          throw invalid_argument("Every integer divides 0 — no smallest k exists.");
+      }
+      if (n < 0) n = -n;
+      cpp_int L = 1;
+      for (int k = 1; k <= 1000; ++k) { // 1000 is more than enough in practice
+          L = lcm_big(L, k);
+          if (n % L != 0) {
+              return k; // smallest k that does not divide n
+          }
+      }
+      return -1; // theoretically unreachable
+  }
+
+  int main() {
+      ios::sync_with_stdio(false);
+      cin.tie(nullptr);
+      cpp_int n;
+      cout << "Enter n: ";
+      cin >> n;
+      try {
+          int result = smallest_not_dividing(n);
+          cout << "Smallest k that does not divide n is: " << result << "\n";
+      } catch (const invalid_argument &e) {
+          cout << e.what() << "\n";
+      }
+      return 0;
+  }
+
+explanation_of_code: |
+  1️⃣ Uses Boost’s `cpp_int` to handle arbitrarily large integers safely.
+  2️⃣ Implements custom `gcd_big` and `lcm_big` since std::gcd is not defined for cpp_int.
+  3️⃣ Starts with L = 1, and for k = 1, 2, 3, … updates L = lcm(L, k).
+  4️⃣ Checks at each step if n % L != 0; if so, k is the smallest integer that does not divide n.
+  5️⃣ Stops early since lcm(1..k) becomes larger than n very quickly.
+
+example_runs: |
+  Input: n = 6
+  Process:
+    lcm(1) = 1 → divides 6
+    lcm(1,2) = 2 → divides 6
+    lcm(1,2,3) = 6 → divides 6
+    lcm(1,2,3,4) = 12 → does not divide 6 ❌
+  Output: k = 4
+
+  Input: n = 12
+  Output: k = 5
