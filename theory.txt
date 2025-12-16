@@ -2851,3 +2851,279 @@ final_code:
         return 0;
     }
 
+38)problem:Count Palindromic Substrings
+statement: > Given a string s of length n, count the total number of substrings
+that are palindromes. A substring is palindromic if it reads the same
+forward and backward.
+
+intuition:core_idea: >Instead of checking every substring separately (which would be very slow),
+we use Dynamic Programming to reuse results of smaller substrings.
+key_observation: >
+A substring s[i..j] is a palindrome if:
+1) The first and last characters are equal (s[i] == s[j])
+2) The inner substring s[i+1..j-1] is already known to be a palindrome
+dependency: >
+This observation means longer substrings depend on shorter substrings,
+so we must compute answers in increasing order of substring length.
+
+state_definition:
+dp_table: palindrome
+meaning: > palindrome[i][j] = 1 if the substring from index i to j (inclusive)
+is a palindrome, otherwise 0.
+dimensions: > The DP table is a 2D matrix of size n x n.
+
+base_cases:
+length_1:
+description: > Every single character is always a palindrome.
+rule: palindrome[i][i] = 1
+length_2:
+description: > A substring of length 2 is a palindrome only if both characters are equal.
+rule: palindrome[i][i+1] = 1 if s[i] == s[i+1]
+
+transition:
+condition: length >= 3
+rule: > 
+palindrome[i][j] = 1 if and only if:
+- s[i] == s[j]
+- palindrome[i+1][j-1] == 1
+explanation: > If the outer characters match and the inner substring is already
+confirmed to be a palindrome, then the full substring is also a palindrome.
+
+iteration_order:
+outer_loop: >
+Iterate over substring lengths from 1 to n.
+inner_loop: >
+For each length, slide the starting index i from 0 to n - length.
+reason: >
+This guarantees that palindrome[i+1][j-1] is already computed
+before it is needed.
+
+answer_computation:
+method: >
+After filling the DP table, iterate over all pairs (i, j) where i <= j
+and count how many entries have value 1.
+result: >
+The total count equals the number of palindromic substrings.
+
+time_complexity:
+dp_filling: O(n^2)
+counting: O(n^2)
+overall: O(n^2)
+
+space_complexity:
+dp_table: O(n^2)
+
+code:
+language: C++
+snippet: |
+#include <bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+int main(){
+    ll n;
+    cin >> n;
+    string s;
+    cin >> s;
+    // palindrome[i][j] = 1 if s[i..j] is a palindrome
+    vector<vector<ll>> palindrome(n, vector<ll>(n, 0));
+    // Fill DP table by increasing substring length
+    for(ll len = 1; len <= n; len++){
+        for(ll i = 0; i < n - len + 1; i++){
+            ll j = i + len - 1;
+            if(len == 1){
+                palindrome[i][j] = 1;  // single character
+            }
+            else if(len == 2){
+                if(s[i] == s[j]) palindrome[i][j] = 1;
+            }
+            else{
+                if(s[i] == s[j] && palindrome[i+1][j-1]){
+                    palindrome[i][j] = 1;
+                }
+            }
+        }
+    }
+    // Count palindromic substrings
+    ll ans = 0;
+    for(ll i = 0; i < n; i++){
+        for(ll j = i; j < n; j++){
+            if(palindrome[i][j]) ans++;
+        }
+    }
+    cout << ans << endl;
+    return 0;
+}
+
+final_takeaway:
+summary: >
+This dynamic programming approach efficiently counts all palindromic
+substrings by building solutions from smaller substrings to larger ones.
+key_point: >
+The order of computation (by substring length) is the most critical
+part of the solution.
+
+39)Problem:Name: "Count Special Triplets"
+  Definition:
+    We want to count the number of triplets (i, j, k) such that:
+      - i < j < k
+      - nums[i] = 2 * nums[j]
+      - nums[k] = 2 * nums[j]
+
+  Restatement_in_simple_words:
+    - Fix an index j as the middle of the triplet.
+    - Look on the LEFT of j (indices 0 to j-1) for values equal to 2 * nums[j].
+    - Look on the RIGHT of j (indices j+1 to n-1) for values equal to 2 * nums[j].
+    - If the value (2 * nums[j]) appears:
+        x times on the left
+        y times on the right
+      then this j contributes x * y valid triplets.
+
+Core_Idea:
+  Key_Observation:
+    - The middle index j is fixed.
+    - Any valid triplet must use nums[j] as the middle element.
+    - The left and right sides are independent once j is fixed.
+    - Therefore:
+        total triplets for j = (count on left) * (count on right)
+
+  Strategy:
+    - Iterate j from left to right.
+    - Maintain:
+        prev map  -> frequency of elements strictly BEFORE j
+        next map  -> frequency of elements strictly AFTER j
+    - At each j:
+        - Compute k = 2 * nums[j]
+        - Multiply prev[k] * next[k]
+        - Add to answer
+
+Data_Structures:
+  prev_map:
+    Meaning:
+      - Stores frequencies of elements from index 0 to j-1
+      - Represents the LEFT side of j
+    Why_needed:
+      - To quickly know how many nums[i] = 2 * nums[j] exist on the left
+
+  next_map:
+    Meaning:
+      - Stores frequencies of elements from index j+1 to n-1
+      - Represents the RIGHT side of j
+    Why_needed:
+      - To quickly know how many nums[k] = 2 * nums[j] exist on the right
+
+Initialization:
+  next_map:
+    How:
+      - First insert ALL elements of nums into next
+    Why:
+      - Before iteration starts, j is at index 0
+      - So everything is initially on the RIGHT side
+
+  prev_map:
+    How:
+      - Start empty
+    Why:
+      - Before index 0, nothing exists on the left
+
+Iteration_Process:
+  Loop:
+    - Iterate j from index 0 to n-1
+  Step_1_Update_prev:
+    Condition:
+      - If j > 0
+    Action:
+      - Add nums[j-1] to prev
+    Reason:
+      - When j moves forward by 1,
+        the previous element becomes part of the LEFT side
+  Step_2_Update_next:
+    Action:
+      - Decrease frequency of nums[j] in next
+      - If frequency becomes 0, erase it
+    Reason:
+      - nums[j] is no longer on the RIGHT side
+      - next must represent indices j+1 to n-1 exactly
+  Step_3_Count_triplets:
+    Compute:
+      k = 2 * nums[j]
+
+    Check:
+      - If k exists in prev AND k exists in next
+
+    Calculation:
+      - Number of choices for i = prev[k]
+      - Number of choices for k = next[k]
+      - Contribution = prev[k] * next[k]
+
+    Add:
+      - Add contribution to ans using modulo
+
+Why_This_Counts_Each_Triplet_Exactly_Once:
+  - Each triplet has exactly one middle index j.
+  - We only count triplets when processing that specific j.
+  - i is guaranteed < j because prev only contains indices < j.
+  - k is guaranteed > j because next only contains indices > j.
+  - Hence:
+      - No overcounting
+      - No missing triplets
+
+Correctness_Proof:
+  Invariant:
+    At iteration j:
+      - prev contains frequencies of nums[0 ... j-1]
+      - next contains frequencies of nums[j+1 ... n-1]
+
+  Using_invariant:
+    - Any valid i must be in prev
+    - Any valid k must be in next
+    - For fixed j, all valid (i, k) pairs are counted as
+        prev[2*nums[j]] * next[2*nums[j]]
+
+  Therefore:
+    - All valid triplets are counted
+    - Only valid triplets are counted
+
+Complexity_Analysis:
+  Time_Complexity:
+    - Building next map: O(n log n)
+    - Loop over j: n iterations
+    - Each map operation: O(log n)
+    - Total: O(n log n)
+
+  Space_Complexity:
+    - prev map: up to O(n)
+    - next map: up to O(n)
+    - Total: O(n)
+
+Overflow_Handling:
+  - Multiplication prev[k] * next[k] can overflow int
+  - Use ll (long long) for:
+      - ans
+      - map values
+      - multiplication
+  - Final result cast back to int after modulo
+
+Final_Code:
+  Implementation: |
+    using ll = long long;
+    const ll M = 1000000007;
+    int specialTriplets(vector<int>& nums) {
+        int n = nums.size();
+        //basically we can iterate through nums and for each nums[i] we can look 
+        //number of times 2*num[i] from index 0 to i-1 and number of times from index i+1 to n-1 
+        //so add multiplication of both mod M to ans 
+        ll ans = 0;
+        map<ll, ll> next, prev;
+        for(int i = 0; i < n; i++) next[nums[i]]++;
+        for(int i = 0; i < n; i++){
+            if(i > 0) prev[nums[i-1]]++;
+            next[nums[i]]--;
+            if(next[nums[i]] == 0) next.erase(nums[i]);
+
+            ll k = 2LL * nums[i];
+            if(prev.find(k) != prev.end() && next.find(k) != next.end()){
+                ans = (ans + (prev[k] * next[k]) % M) % M;
+            }
+        }
+        return (int)ans;
+    }
